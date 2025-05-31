@@ -28,58 +28,38 @@
  * for concurrency, event handling, and resource management, designed to support
  * multi-threaded 3D applications while being reusable in other Java projects.
  *
- * <h2>Purpose</h2>
- * This module is a standalone utility library, independent of the PI engine's
- * core functionality, making it suitable for use in other Java-based projects,
- * such as jMonkeyEngine applications. It offers tools for efficient concurrency,
- * decoupled event handling, and resource cleanup.
+ * <h2>Purpose</h2> This module is a standalone utility library, independent of
+ * the PI engine's core functionality, making it suitable for use in other
+ * Java-based projects, such as jMonkeyEngine applications. It offers tools for
+ * efficient concurrency, decoupled event handling, and resource cleanup.
  *
  * <h2>Exported Packages</h2>
  * <ul>
- *   <li>{@code org.piengine.commons.util}: Core utility classes, including
- *       {@code Registration} for managing event listeners and resource cleanup.</li>
- *   <li>{@code org.piengine.commons.util.eventbus}: Event handling with the
- *       {@code Omnibus} event bus for publishing and subscribing to events.</li>
- *   <li>{@code org.piengine.commons.util.concurrent.locks}: Concurrency utilities,
- *       including {@code UpgradableReadWriteLock} and {@code Lockable} for
- *       high-performance read/write locking with upgrade support, optimized for
- *       virtual threads in 3D scene graphs.</li>
+ * <li>{@code org.piengine.commons.util}: Core utility classes, including
+ * {@code Registration} for managing event listeners and resource cleanup.</li>
+ * <li>{@code org.piengine.commons.util.eventbus}: Event handling with the
+ * {@code Omnibus} event bus for publishing and subscribing to events.</li>
+ * <li>{@code org.piengine.commons.util.concurrent.locks}: Concurrency
+ * utilities, including {@code UpgradableReadWriteLock} and {@code Lockable} for
+ * high-performance read/write locking with upgrade support, optimized for
+ * virtual threads in 3D scene graphs.</li>
  * </ul>
  *
  * <h2>Dependencies</h2>
  * <ul>
- *   <li>{@code java.base}: Required for core Java functionality, including
- *       Java 23 features like Virtual Threads and StructuredTaskScope.</li>
+ * <li>{@code java.base}: Required for core Java functionality, including Java
+ * 23 features like Virtual Threads and StructuredTaskScope.</li>
  * </ul>
  *
- * <h2>Usage</h2>
- * This module is typically used in conjunction with other PI engine modules,
- * such as {@code pi.game.engine.core}, to provide concurrency and event handling
- * support. It can also be used independently in other projects requiring utility
- * abstractions.
+ * <h2>Usage</h2> This module is typically used in conjunction with other PI
+ * engine modules, such as {@code pi.game.engine.core}, to provide concurrency
+ * and event handling support. It can also be used independently in other
+ * projects requiring utility abstractions.
  *
- * <h3>Example: Event Handling with Omnibus</h3>
- * <pre>
- * import org.piengine.commons.util.eventbus.Omnibus;
- * import org.piengine.commons.util.Registration;
- * import java.util.function.Consumer;
- *
- * class GameEvent {
- *     private final String message;
- *     public GameEvent(String message) { this.message = message; }
- *     public String getMessage() { return message; }
- * }
- *
- * Omnibus bus = new OmnibusImpl();
- * Consumer<GameEvent> listener = event -> System.out.println("Received: " + event.getMessage());
- * Registration reg = bus.registerListener(GameEvent.class, listener);
- * bus.publish(new GameEvent("Player Moved"));
- * reg.unregister();
- * </pre>
  *
  * <h2>Version</h2>
  * <ul>
- *   <li><b>Current Version</b>: 0.0.1-SNAPSHOT (as of May 30, 2025)</li>
+ * <li><b>Current Version</b>: 0.0.1-SNAPSHOT (as of May 30, 2025)</li>
  * </ul>
  *
  * @since 0.0.1
