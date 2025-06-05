@@ -107,7 +107,7 @@ public enum CountUnit implements ConvertableUnit<CountUnit>, Unit {
 	 * Example:
 	 * 
 	 * <pre>
-	 * Pair<Long, CountUnit> result = scaleUnit(1500);
+	 * Pair{@code <Long, CountUnit>} result = scaleUnit(1500);
 	 * // result = Pair.of(1, CountUnit.KILO)
 	 * </pre>
 	 *
@@ -133,7 +133,7 @@ public enum CountUnit implements ConvertableUnit<CountUnit>, Unit {
 	 * Example:
 	 * 
 	 * <pre>
-	 * Pair<Long, CountUnit> result = scaleUnit(1500, CountUnit.MEGA);
+	 * Pair{@code <Long, CountUnit>} result = scaleUnit(1500, CountUnit.MEGA);
 	 * // result = Pair.of(0, CountUnit.KILO)
 	 * </pre>
 	 *

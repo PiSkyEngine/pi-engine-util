@@ -71,7 +71,7 @@
  * }
  *
  * Omnibus bus = new OmnibusImpl();
- * Consumer<GameEvent> listener = event -> System.out.println("Received: " + event.getMessage());
+ * {@code Consumer<GameEvent> listener = event -> System.out.println("Received: " + event.getMessage());}
  * Registration reg = bus.registerListener(GameEvent.class, listener);
  * bus.publish(new GameEvent("Player Moved"));
  * reg.unregister();
@@ -85,6 +85,11 @@
  * @since 0.0.1
  */
 module org.piengine.util {
+	exports org.piengine.event;
 	exports org.piengine.util;
+	exports org.piengine.util.config;
 	exports org.piengine.util.concurrent.locks;
+	
+	requires org.yaml.snakeyaml;
+    requires com.fasterxml.jackson.databind;
 }

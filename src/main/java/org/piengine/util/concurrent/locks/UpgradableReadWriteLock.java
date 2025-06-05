@@ -33,50 +33,65 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.regex.Pattern;
 
 /**
- * A high-performance read-write lock with support for upgrading from read to
- * write lock, optimized for virtual threads in a multi-threaded 3D scene graph.
- * Prevents deadlocks when multiple threads upgrade by allowing upgrades when
- * all readers are upgraders or no readers remain. Used for locking juncture
- * nodes (e.g., physics, audio, geometry).
+ * The Class UpgradableReadWriteLock.
  */
 public class UpgradableReadWriteLock implements ReadWriteLock {
-	
+
+	/**
+	 * The Class DbgLockToString.
+	 */
+	private static class DbgLockToString {
+
+		/** The Constant DBG_PATT. */
+		private static final Pattern DBG_PATT = Pattern.compile(""
+				+ "(Write locks = \\d+, Read locks = \\d+)"
+				+ "");
+
+		/**
+		 * Extract dbg str.
+		 *
+		 * @param lockToString the lock to string
+		 * @return the string
+		 */
+		private static String extractDbgStr(String lockToString) {
+			var match = DBG_PATT.matcher(lockToString);
+
+			if (match.find())
+				return match.group(1);
+
+			return "";
+		}
+
+	}
+
 	/**
 	 * The Class ReadLock.
 	 */
 	private class ReadLock implements Lock {
-		
+
 		/**
-		 * Lock.
-		 *
 		 * @see java.util.concurrent.locks.Lock#lock()
 		 */
 		@Override
 		public void lock() {
 			Thread current = Thread.currentThread();
 			rwLock.readLock().lock();
-			readHolds.compute(current, (k, v) -> (v == null) ? 1 : v + 1);
+			readHolds.compute(current, (_, v) -> (v == null) ? 1 : v + 1);
 			readerCount.incrementAndGet();
 		}
 
 		/**
-		 * Lock interruptibly.
-		 *
-		 * @throws InterruptedException the interrupted exception
 		 * @see java.util.concurrent.locks.Lock#lockInterruptibly()
 		 */
 		@Override
 		public void lockInterruptibly() throws InterruptedException {
 			Thread current = Thread.currentThread();
 			rwLock.readLock().lockInterruptibly();
-			readHolds.compute(current, (k, v) -> (v == null) ? 1 : v + 1);
+			readHolds.compute(current, (_, v) -> (v == null) ? 1 : v + 1);
 			readerCount.incrementAndGet();
 		}
 
 		/**
-		 * New condition.
-		 *
-		 * @return the condition
 		 * @see java.util.concurrent.locks.Lock#newCondition()
 		 */
 		@Override
@@ -85,16 +100,13 @@ public class UpgradableReadWriteLock implements ReadWriteLock {
 		}
 
 		/**
-		 * Try lock.
-		 *
-		 * @return true, if successful
 		 * @see java.util.concurrent.locks.Lock#tryLock()
 		 */
 		@Override
 		public boolean tryLock() {
 			Thread current = Thread.currentThread();
 			if (rwLock.readLock().tryLock()) {
-				readHolds.compute(current, (k, v) -> (v == null) ? 1 : v + 1);
+				readHolds.compute(current, (_, v) -> (v == null) ? 1 : v + 1);
 				readerCount.incrementAndGet();
 				return true;
 			}
@@ -102,12 +114,6 @@ public class UpgradableReadWriteLock implements ReadWriteLock {
 		}
 
 		/**
-		 * Try lock.
-		 *
-		 * @param time the time
-		 * @param unit the unit
-		 * @return true, if successful
-		 * @throws InterruptedException the interrupted exception
 		 * @see java.util.concurrent.locks.Lock#tryLock(long,
 		 *      java.util.concurrent.TimeUnit)
 		 */
@@ -115,7 +121,7 @@ public class UpgradableReadWriteLock implements ReadWriteLock {
 		public boolean tryLock(long time, TimeUnit unit) throws InterruptedException {
 			Thread current = Thread.currentThread();
 			if (rwLock.readLock().tryLock(time, unit)) {
-				readHolds.compute(current, (k, v) -> (v == null) ? 1 : v + 1);
+				readHolds.compute(current, (_, v) -> (v == null) ? 1 : v + 1);
 				readerCount.incrementAndGet();
 				return true;
 			}
@@ -123,8 +129,6 @@ public class UpgradableReadWriteLock implements ReadWriteLock {
 		}
 
 		/**
-		 * Unlock.
-		 *
 		 * @see java.util.concurrent.locks.Lock#unlock()
 		 */
 		@Override
@@ -158,10 +162,8 @@ public class UpgradableReadWriteLock implements ReadWriteLock {
 	 * The Class WriteLock.
 	 */
 	private class WriteLock implements Lock {
-		
+
 		/**
-		 * Lock.
-		 *
 		 * @see java.util.concurrent.locks.Lock#lock()
 		 */
 		@Override
@@ -211,9 +213,6 @@ public class UpgradableReadWriteLock implements ReadWriteLock {
 		}
 
 		/**
-		 * Lock interruptibly.
-		 *
-		 * @throws InterruptedException the interrupted exception
 		 * @see java.util.concurrent.locks.Lock#lockInterruptibly()
 		 */
 		@Override
@@ -256,9 +255,6 @@ public class UpgradableReadWriteLock implements ReadWriteLock {
 		}
 
 		/**
-		 * New condition.
-		 *
-		 * @return the condition
 		 * @see java.util.concurrent.locks.Lock#newCondition()
 		 */
 		@Override
@@ -267,9 +263,6 @@ public class UpgradableReadWriteLock implements ReadWriteLock {
 		}
 
 		/**
-		 * Try lock.
-		 *
-		 * @return true, if successful
 		 * @see java.util.concurrent.locks.Lock#tryLock()
 		 */
 		@Override
@@ -292,12 +285,6 @@ public class UpgradableReadWriteLock implements ReadWriteLock {
 		}
 
 		/**
-		 * Try lock.
-		 *
-		 * @param time the time
-		 * @param unit the unit
-		 * @return true, if successful
-		 * @throws InterruptedException the interrupted exception
 		 * @see java.util.concurrent.locks.Lock#tryLock(long,
 		 *      java.util.concurrent.TimeUnit)
 		 */
@@ -337,8 +324,6 @@ public class UpgradableReadWriteLock implements ReadWriteLock {
 		}
 
 		/**
-		 * Unlock.
-		 *
 		 * @see java.util.concurrent.locks.Lock#unlock()
 		 */
 		@Override
@@ -359,7 +344,7 @@ public class UpgradableReadWriteLock implements ReadWriteLock {
 
 	/** The rw lock. */
 	private final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock(true); // fair mode
-	
+
 	/** The read lock. */
 	private final Lock readLock = new ReadLock();
 
@@ -378,7 +363,7 @@ public class UpgradableReadWriteLock implements ReadWriteLock {
 	/** The upgraders. */
 	// Track threads attempting to upgrade
 	private final ConcurrentHashMap<Thread, Boolean> upgraders = new ConcurrentHashMap<>();
-	
+
 	/** The upgrade lock. */
 	// Dedicated lock and condition for upgrade coordination
 	private final ReentrantLock upgradeLock = new ReentrantLock();
@@ -387,7 +372,14 @@ public class UpgradableReadWriteLock implements ReadWriteLock {
 	private final Condition upgradeCondition = upgradeLock.newCondition();
 
 	/**
-	 * Checks if the current thread holds a read lock.
+	 * Instantiates a new upgradable read write lock.
+	 */
+	public UpgradableReadWriteLock() {
+
+	}
+
+	/**
+	 * Checks if is read lock held by current thread.
 	 *
 	 * @return true, if is read lock held by current thread
 	 */
@@ -396,9 +388,6 @@ public class UpgradableReadWriteLock implements ReadWriteLock {
 	}
 
 	/**
-	 * Read lock.
-	 *
-	 * @return the lock
 	 * @see java.util.concurrent.locks.ReadWriteLock#readLock()
 	 */
 	@Override
@@ -407,49 +396,6 @@ public class UpgradableReadWriteLock implements ReadWriteLock {
 	}
 
 	/**
-	 * The Class DbgLockToString.
-	 */
-	private static class DbgLockToString {
-
-		/** The Constant DBG_PATT. */
-		private static final Pattern DBG_PATT = Pattern.compile(""
-				+ "(Write locks = \\d+, Read locks = \\d+)"
-				+ "");
-
-		/**
-		 * Extract dbg str.
-		 *
-		 * @param lockToString the lock to string
-		 * @return the string
-		 */
-		private static String extractDbgStr(String lockToString) {
-			var match = DBG_PATT.matcher(lockToString);
-
-			if (match.find())
-				return match.group(1);
-
-			return "";
-		}
-
-		/**
-		 * To dbg str.
-		 *
-		 * @param writeCount the write count
-		 * @param readCount  the read count
-		 * @return the string
-		 */
-		private static String toDbgStr(int writeCount, int readCount) {
-
-			return "Write locks = %d, Read locks = %d"
-					.formatted(writeCount, readCount);
-		}
-
-	}
-
-	/**
-	 * To string.
-	 *
-	 * @return the string
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
@@ -460,9 +406,6 @@ public class UpgradableReadWriteLock implements ReadWriteLock {
 	}
 
 	/**
-	 * Write lock.
-	 *
-	 * @return the lock
 	 * @see java.util.concurrent.locks.ReadWriteLock#writeLock()
 	 */
 	@Override

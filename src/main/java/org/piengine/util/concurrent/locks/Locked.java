@@ -36,7 +36,7 @@ public interface Locked extends AutoCloseable {
 	/**
 	 * The Class LockedSupport.
 	 */
-	public class LockedSupport implements Locked {
+	public static class LockedSupport implements Locked {
 		
 		/** The locked. */
 		private final Locked locked;

@@ -44,7 +44,7 @@ public interface Lockable<R extends Locked, W extends Locked> extends ReadWriteL
 	/**
 	 * The Class LockableReadWrite.
 	 */
-	class LockableReadWrite extends LockableSupport<LockedSupport, LockedSupport> {
+	static class LockableReadWrite extends LockableSupport<LockedSupport, LockedSupport> {
 
 		/**
 		 * Instantiates a new lockable read write.
@@ -61,7 +61,6 @@ public interface Lockable<R extends Locked, W extends Locked> extends ReadWriteL
 		public LockableReadWrite(ReadWriteLock rwLock) {
 			super(rwLock, new LockedSupport(rwLock.readLock()), new LockedSupport(rwLock.writeLock()));
 		}
-
 	}
 
 	/**
@@ -70,7 +69,7 @@ public interface Lockable<R extends Locked, W extends Locked> extends ReadWriteL
 	 * @param <R> the generic type
 	 * @param <W> the generic type
 	 */
-	class LockableSupport<R extends Locked, W extends Locked> implements Lockable<R, W>, ReadWriteLock {
+	static class LockableSupport<R extends Locked, W extends Locked> implements Lockable<R, W>, ReadWriteLock {
 
 		/**
 		 * To string.
@@ -146,7 +145,6 @@ public interface Lockable<R extends Locked, W extends Locked> extends ReadWriteL
 		@Override
 		public R lockForRead() throws InterruptedException {
 			rwLock.readLock().lock();
-
 			return readLocked.get();
 		}
 
@@ -165,7 +163,6 @@ public interface Lockable<R extends Locked, W extends Locked> extends ReadWriteL
 		public R lockForRead(long timeout, TimeUnit unit) throws InterruptedException, TimeoutException {
 			if (!rwLock.readLock().tryLock(timeout, unit))
 				throw new TimeoutException();
-
 			return readLocked.get();
 		}
 
@@ -179,7 +176,6 @@ public interface Lockable<R extends Locked, W extends Locked> extends ReadWriteL
 		@Override
 		public W lockForWrite() throws InterruptedException {
 			rwLock.writeLock().lock();
-
 			return writeLocked.get();
 		}
 
@@ -198,7 +194,6 @@ public interface Lockable<R extends Locked, W extends Locked> extends ReadWriteL
 		public W lockForWrite(long timeout, TimeUnit unit) throws InterruptedException, TimeoutException {
 			if (!rwLock.writeLock().tryLock(timeout, unit))
 				throw new TimeoutException();
-
 			return writeLocked.get();
 		}
 
@@ -223,7 +218,6 @@ public interface Lockable<R extends Locked, W extends Locked> extends ReadWriteL
 		public Lock writeLock() {
 			return rwLock.writeLock();
 		}
-
 	}
 
 	/**
@@ -263,5 +257,4 @@ public interface Lockable<R extends Locked, W extends Locked> extends ReadWriteL
 	 * @throws TimeoutException     the timeout exception
 	 */
 	W lockForWrite(long timeout, TimeUnit unit) throws InterruptedException, TimeoutException;
-
 }

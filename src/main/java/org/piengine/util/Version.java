@@ -28,122 +28,39 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 
 /**
- * A comprehensive implementation of Semantic Versioning 2.0.0 as defined by
- * <a href="https://semver.org">semver.org</a>. This class provides parsing,
- * comparison, and validation of version strings that follow the SemVer
- * specification.
- * 
- * <h2>Version Format</h2> A version number must take the form X.Y.Z where X, Y,
- * and Z are non-negative integers, and MUST NOT contain leading zeroes. Each
- * element MUST increase numerically.
- * <ul>
- * <li>X = Major version (incompatible API changes)</li>
- * <li>Y = Minor version (backwards-compatible functionality)</li>
- * <li>Z = Patch version (backwards-compatible bug fixes)</li>
- * </ul>
- * 
- * <h2>Additional Labels</h2>
- * <ul>
- * <li>Pre-release: A pre-release version MAY be denoted by appending a hyphen
- * and a series of dot-separated identifiers (e.g., 1.0.0-alpha.1)</li>
- * <li>Build metadata: Build metadata MAY be denoted by appending a plus sign
- * and a series of dot-separated identifiers (e.g., 1.0.0+20130313144700)</li>
- * </ul>
- * 
- * <h2>Examples of Valid Versions</h2>
- * 
- * <pre>
- * 1.0.0
- * 2.1.0
- * 1.0.0-alpha
- * 1.0.0-alpha.1
- * 1.0.0-alpha.beta
- * 1.0.0-beta
- * 1.0.0-beta.2
- * 1.0.0-beta.11
- * 1.0.0-rc.1
- * 1.0.0-rc.1+build.123
- * 2.1.0+build.123
- * </pre>
- * 
- * <h2>Version Precedence</h2> Precedence refers to how versions are compared to
- * each other when ordered.
- * <ol>
- * <li>Major, minor, and patch versions are compared numerically.</li>
- * <li>When major, minor, and patch are equal, a pre-release version has lower
- * precedence than a normal version.</li>
- * <li>Build metadata DOES NOT affect precedence.</li>
- * </ol>
- * 
- * @author Sly Technologies
- * @version 2.0
- * @see <a href="https://semver.org">Semantic Versioning 2.0.0 Specification</a>
+ * The Class Version.
  */
 public class Version implements Comparable<Version> {
 
+	/** The major. */
 	private final int major;
+	
+	/** The minor. */
 	private final int minor;
+	
+	/** The patch. */
 	private final int patch;
+	
+	/** The pre release. */
 	private final String preRelease; // Optional pre-release tag (e.g., "alpha.1")
+	
+	/** The build meta. */
 	private final String buildMeta; // Optional build metadata (e.g., "build.123")
 
-	/**
-	 * Regular expression pattern for validating SemVer format. Matches:
-	 * <ul>
-	 * <li>Major version: (0|[1-9]\d*)</li>
-	 * <li>Minor version: \.(0|[1-9]\d*)</li>
-	 * <li>Patch version: \.(0|[1-9]\d*)</li>
-	 * <li>Pre-release version (optional): -([0-9a-zA-Z-]+(\.[0-9a-zA-Z-]+)*)</li>
-	 * <li>Build metadata (optional): \+([0-9a-zA-Z-]+(\.[0-9a-zA-Z-]+)*)</li>
-	 * </ul>
-	 */
+	/** The Constant VERSION_PATTERN. */
 	private static final String VERSION_PATTERN = "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)"
 			+ "(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)"
 			+ "(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?"
 			+ "(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$";
 
+	/** The Constant SIMPLE_VERSION_PATTERN. */
 	private static final String SIMPLE_VERSION_PATTERN = "(\\d+\\.\\d+\\.\\d+)";
 
 	/**
-	 * Extracts a semantic version number from the provided input string.
+	 * Extract from string.
 	 *
-	 * <p>
-	 * This method scans the input string for a substring that matches the Semantic
-	 * Versioning format, which follows the pattern <code>MAJOR.MINOR.PATCH</code>.
-	 * It also supports optional pre-release and build metadata identifiers as
-	 * defined by Semantic Versioning specifications.
-	 *
-	 * <p>
-	 * If a version number adhering to the semantic versioning pattern is found
-	 * within the input string, it is returned wrapped in an {@link Optional}. If no
-	 * valid version number is present, {@link Optional#empty()} is returned.
-	 *
-	 * <h3>Examples:</h3>
-	 *
-	 * <pre>{@code
-	 * // Example 1: Basic semantic version
-	 * String input1 = "libpcap version 1.10.4 (with TPACKET_V3)";
-	 * Optional<String> version1 = Version.extractFromString(input1);
-	 * // version1 contains "1.10.4"
-	 *
-	 * // Example 2: Semantic version with pre-release and build metadata
-	 * String input2 = "Release candidate version 2.1.3-rc.1+build.789";
-	 * Optional<String> version2 = Version.extractFromString(input2);
-	 * // version2 contains "2.1.3-rc.1+build.789"
-	 *
-	 * // Example 3: No version present
-	 * String input3 = "No version information available.";
-	 * Optional<String> version3 = Version.extractFromString(input3);
-	 * // version3 is empty
-	 * }</pre>
-	 *
-	 * @param str the input string from which to extract the semantic version number
-	 * @return an {@link Optional} containing the extracted version number if
-	 *         present, or {@link Optional#empty()} if no valid semantic version is
-	 *         found
-	 * @throws NullPointerException if the input string {@code str} is {@code null}
-	 * 
-	 * @see <a href="https://semver.org/">Semantic Versioning 2.0.0</a>
+	 * @param str the str
+	 * @return the optional
 	 */
 	public static Optional<String> extractFromString(String str) {
 		Pattern pattern = Pattern.compile(SIMPLE_VERSION_PATTERN);
@@ -153,37 +70,12 @@ public class Version implements Comparable<Version> {
 	}
 
 	/**
-	 * Validates semantic version compatibility between an installed library and an
-	 * application. Performs a minimal check that ensures the major versions match
-	 * according to Semantic Versioning rules.
-	 * 
-	 * This method follows these rules:
-	 * <ul>
-	 * <li>Major versions must match exactly (e.g., 2.x.x is compatible with
-	 * 2.y.y)</li>
-	 * <li>Application's minor version must not be greater than library's minor
-	 * version</li>
-	 * <li>Patch versions are not considered in this check</li>
-	 * </ul>
+	 * Minimal check.
 	 *
-	 * Example compatible versions:
-	 * 
-	 * <pre>
-	 *   Library: 2.3.0, Application: 2.3.1  (compatible)
-	 *   Library: 2.4.0, Application: 2.3.0  (compatible)
-	 *   Library: 2.0.0, Application: 2.0.1  (compatible)
-	 *   Library: 3.0.0, Application: 2.0.0  (incompatible - major version mismatch)
-	 *   Library: 2.1.0, Application: 2.2.0  (incompatible - app minor version too high)
-	 * </pre>
-	 *
-	 * @param name       the name of the library or component being checked
-	 * @param libVersion the installed library version (format: MAJOR.MINOR.PATCH)
-	 * @param appVersion the application version requiring the library (format:
-	 *                   MAJOR.MINOR.PATCH)
-	 * @throws InvalidVersionException if the versions are incompatible or if either
-	 *                                 version string is malformed (must be in
-	 *                                 format MAJOR.MINOR.PATCH)
-	 * @see <a href="https://semver.org">Semantic Versioning 2.0.0</a>
+	 * @param name       the name
+	 * @param libVersion the lib version
+	 * @param appVersion the app version
+	 * @throws InvalidVersionException the invalid version exception
 	 */
 	public static void minimalCheck(String name, String libVersion, String appVersion) throws InvalidVersionException {
 		var lib = new Version(libVersion);
@@ -197,42 +89,12 @@ public class Version implements Comparable<Version> {
 	}
 
 	/**
-	 * Validates strict semantic version compatibility between an installed library
-	 * and an application. Performs a rigorous check that enforces exact major and
-	 * minor version matches, with allowance only for higher library patch versions.
-	 * 
-	 * This method enforces these rules:
-	 * <ul>
-	 * <li>Major versions must match exactly (e.g., 2.x.x requires 2.y.y)</li>
-	 * <li>Minor versions must match exactly (e.g., x.3.x requires x.3.y)</li>
-	 * <li>Library patch version must be greater than or equal to application's
-	 * patch version</li>
-	 * </ul>
+	 * Strict check.
 	 *
-	 * Version compatibility examples:
-	 * 
-	 * <pre>
-	 *   Library: 2.3.4, Application: 2.3.4  (compatible - exact match)
-	 *   Library: 2.3.5, Application: 2.3.4  (compatible - higher lib patch)
-	 *   Library: 2.3.3, Application: 2.3.4  (incompatible - lib patch too low)
-	 *   Library: 2.4.0, Application: 2.3.0  (incompatible - minor version mismatch)
-	 *   Library: 3.3.0, Application: 2.3.0  (incompatible - major version mismatch)
-	 * </pre>
-	 *
-	 * @param name       the name of the library or component being checked
-	 * @param libVersion the installed library version (format: MAJOR.MINOR.PATCH)
-	 * @param appVersion the application version requiring the library (format:
-	 *                   MAJOR.MINOR.PATCH)
-	 * @throws InvalidVersionException if any of these conditions are met:
-	 *                                 <ul>
-	 *                                 <li>Either version string is malformed (must
-	 *                                 be MAJOR.MINOR.PATCH)</li>
-	 *                                 <li>Major versions do not match exactly</li>
-	 *                                 <li>Minor versions do not match exactly</li>
-	 *                                 <li>Library's patch version is lower than
-	 *                                 application's</li>
-	 *                                 </ul>
-	 * @see <a href="https://semver.org">Semantic Versioning 2.0.0</a>
+	 * @param name       the name
+	 * @param libVersion the lib version
+	 * @param appVersion the app version
+	 * @throws InvalidVersionException the invalid version exception
 	 */
 	public static void strictCheck(String name, String libVersion, String appVersion) throws InvalidVersionException {
 		var lib = new Version(libVersion);
@@ -246,14 +108,11 @@ public class Version implements Comparable<Version> {
 	}
 
 	/**
-	 * Parses a version string into its constituent components according to SemVer
-	 * rules.
+	 * Parses the version.
 	 *
-	 * @param version the version string to parse
-	 * @return array containing [major, minor, patch, preRelease, buildMeta]
-	 * @throws InvalidVersionException if the version string doesn't conform to
-	 *                                 SemVer format
-	 * @throws NullPointerException    if version is null
+	 * @param version the version
+	 * @return the string[]
+	 * @throws InvalidVersionException the invalid version exception
 	 */
 
 	private static String[] parseVersion(String version) throws InvalidVersionException {
@@ -285,22 +144,10 @@ public class Version implements Comparable<Version> {
 	}
 
 	/**
-	 * Creates a new Version instance by parsing a version string that follows the
-	 * SemVer format.
-	 * 
-	 * <p>
-	 * Version string must be in one of these formats:
-	 * </p>
-	 * <ul>
-	 * <li>MAJOR.MINOR.PATCH (e.g., "2.0.0")</li>
-	 * <li>MAJOR.MINOR.PATCH-PRERELEASE (e.g., "2.0.0-alpha.1")</li>
-	 * <li>MAJOR.MINOR.PATCH+BUILD (e.g., "2.0.0+build.123")</li>
-	 * <li>MAJOR.MINOR.PATCH-PRERELEASE+BUILD (e.g., "2.0.0-alpha.1+build.123")</li>
-	 * </ul>
+	 * Instantiates a new version.
 	 *
-	 * @param version the version string to parse
-	 * @throws InvalidVersionException if the version string is invalid or malformed
-	 * @throws NullPointerException    if version is null
+	 * @param version the version
+	 * @throws InvalidVersionException the invalid version exception
 	 */
 	public Version(String version) throws InvalidVersionException {
 		String[] components = parseVersion(version);
@@ -317,41 +164,36 @@ public class Version implements Comparable<Version> {
 	}
 
 	/**
-	 * Creates a new Version with the specified major, minor, and patch versions.
-	 * Pre-release and build metadata will be null.
+	 * Instantiates a new version.
 	 *
-	 * @param major the major version number (must be non-negative)
-	 * @param minor the minor version number (must be non-negative)
-	 * @param patch the patch version number (must be non-negative)
-	 * @throws IllegalArgumentException if any version number is negative
+	 * @param major the major
+	 * @param minor the minor
+	 * @param patch the patch
 	 */
 	public Version(int major, int minor, int patch) {
 		this(major, minor, patch, null, null);
 	}
 
 	/**
-	 * Creates a new Version with the specified major, minor, patch versions and
-	 * pre-release identifier. Build metadata will be null.
+	 * Instantiates a new version.
 	 *
-	 * @param major      the major version number (must be non-negative)
-	 * @param minor      the minor version number (must be non-negative)
-	 * @param patch      the patch version number (must be non-negative)
-	 * @param preRelease the pre-release identifier (may be null)
-	 * @throws IllegalArgumentException if any version number is negative
+	 * @param major      the major
+	 * @param minor      the minor
+	 * @param patch      the patch
+	 * @param preRelease the pre release
 	 */
 	public Version(int major, int minor, int patch, String preRelease) {
 		this(major, minor, patch, preRelease, null);
 	}
 
 	/**
-	 * Creates a new Version with all components specified.
+	 * Instantiates a new version.
 	 *
-	 * @param major      the major version number (must be non-negative)
-	 * @param minor      the minor version number (must be non-negative)
-	 * @param patch      the patch version number (must be non-negative)
-	 * @param preRelease the pre-release identifier (may be null)
-	 * @param buildMeta  the build metadata (may be null)
-	 * @throws IllegalArgumentException if any version number is negative
+	 * @param major      the major
+	 * @param minor      the minor
+	 * @param patch      the patch
+	 * @param preRelease the pre release
+	 * @param buildMeta  the build meta
 	 */
 	public Version(int major, int minor, int patch, String preRelease, String buildMeta) {
 		if (major < 0 || minor < 0 || patch < 0) {
@@ -366,30 +208,7 @@ public class Version implements Comparable<Version> {
 	}
 
 	/**
-	 * Compares this Version with another Version for order according to SemVer
-	 * precedence rules.
-	 * 
-	 * <p>
-	 * Precedence is determined by comparing each dot-separated identifier from left
-	 * to right until a difference is found:
-	 * </p>
-	 * <ol>
-	 * <li>Major, minor, and patch versions are compared numerically</li>
-	 * <li>Pre-release versions have lower precedence than the associated normal
-	 * version</li>
-	 * <li>Pre-release versions are compared by each dot-separated identifier:
-	 * <ul>
-	 * <li>Identifiers consisting of only digits are compared numerically</li>
-	 * <li>Identifiers with letters or hyphens are compared lexically</li>
-	 * <li>Numeric identifiers have lower precedence than non-numeric</li>
-	 * </ul>
-	 * </li>
-	 * <li>Build metadata does not affect precedence</li>
-	 * </ol>
-	 *
-	 * @param other the Version to be compared
-	 * @return a negative integer, zero, or a positive integer as this Version is
-	 *         less than, equal to, or greater than the specified Version
+	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
 	@Override
 	public int compareTo(Version other) {
@@ -445,32 +264,10 @@ public class Version implements Comparable<Version> {
 	}
 
 	/**
-	 * Determines if this Version is compatible with another Version according to
-	 * SemVer rules.
-	 * 
-	 * <p>
-	 * Compatibility Rules:
-	 * </p>
-	 * <ul>
-	 * <li>For versions 0.y.z (development versions):
-	 * <ul>
-	 * <li>Only exact matches are compatible</li>
-	 * <li>Changes may break API at any time</li>
-	 * </ul>
-	 * </li>
-	 * <li>For versions ≥ 1.0.0:
-	 * <ul>
-	 * <li>Major versions must match exactly</li>
-	 * <li>The other version's minor must not be greater than this version's
-	 * minor</li>
-	 * <li>Patch versions do not affect compatibility</li>
-	 * </ul>
-	 * </li>
-	 * </ul>
+	 * Checks if is compatible with.
 	 *
-	 * @param v the Version to check for compatibility
-	 * @return true if the versions are compatible, false otherwise
-	 * @throws NullPointerException if v is null
+	 * @param libraryVersion the library version
+	 * @return true, if is compatible with
 	 */
 	public boolean isCompatibleWith(Version libraryVersion) {
 		Objects.requireNonNull(libraryVersion, "Library version cannot be null");
@@ -489,13 +286,7 @@ public class Version implements Comparable<Version> {
 	}
 
 	/**
-	 * Returns a string representation of this Version in SemVer format.
-	 * 
-	 * <p>
-	 * Format: MAJOR.MINOR.PATCH[-PRERELEASE][+BUILD]
-	 * </p>
-	 *
-	 * @return the formatted version string
+	 * @see java.lang.Object#toString()
 	 */
 	@Override
 	public String toString() {
@@ -514,16 +305,7 @@ public class Version implements Comparable<Version> {
 	}
 
 	/**
-	 * Compares this Version with another object for equality.
-	 * 
-	 * <p>
-	 * Two Versions are considered equal if their major, minor, patch, and
-	 * pre-release components are equal. Build metadata is not considered in
-	 * equality comparisons.
-	 * </p>
-	 *
-	 * @param obj the object to compare with
-	 * @return true if the objects are equal, false otherwise
+	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	@Override
 	public boolean equals(Object obj) {
@@ -541,14 +323,7 @@ public class Version implements Comparable<Version> {
 	}
 
 	/**
-	 * Returns a hash code value for this Version.
-	 * 
-	 * <p>
-	 * The hash code is computed from the major, minor, patch, and pre-release
-	 * components. Build metadata is not included in the hash code computation.
-	 * </p>
-	 *
-	 * @return a hash code value for this Version
+	 * @see java.lang.Object#hashCode()
 	 */
 	@Override
 	public int hashCode() {
@@ -557,45 +332,45 @@ public class Version implements Comparable<Version> {
 	}
 
 	/**
-	 * Returns the major version number.
-	 * 
-	 * @return the major version number
+	 * Gets the major.
+	 *
+	 * @return the major
 	 */
 	public int getMajor() {
 		return major;
 	}
 
 	/**
-	 * Returns the minor version number.
-	 * 
-	 * @return the minor version number
+	 * Gets the minor.
+	 *
+	 * @return the minor
 	 */
 	public int getMinor() {
 		return minor;
 	}
 
 	/**
-	 * Returns the patch version number.
-	 * 
-	 * @return the patch version number
+	 * Gets the patch.
+	 *
+	 * @return the patch
 	 */
 	public int getPatch() {
 		return patch;
 	}
 
 	/**
-	 * Returns the pre-release identifier, if any.
-	 * 
-	 * @return the pre-release identifier, or null if none exists
+	 * Gets the pre release.
+	 *
+	 * @return the pre release
 	 */
 	public String getPreRelease() {
 		return preRelease;
 	}
 
 	/**
-	 * Returns the build metadata, if any.
-	 * 
-	 * @return the build metadata, or null if none exists
+	 * Gets the builds the metadata.
+	 *
+	 * @return the builds the metadata
 	 */
 	public String getBuildMetadata() {
 		return buildMeta;

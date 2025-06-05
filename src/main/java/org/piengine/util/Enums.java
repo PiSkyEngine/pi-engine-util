@@ -112,7 +112,7 @@ public final class Enums {
 	public static <T extends Enum<T>, T_EXCEPTION extends Throwable> T getEnumOrThrow(Class<T> enumType, String name,
 			Supplier<T_EXCEPTION> onNotFound)
 			throws T_EXCEPTION {
-		return getEnumOrThrow(enumType, name, n -> onNotFound.get());
+		return getEnumOrThrow(enumType, name, _ -> onNotFound.get());
 	}
 
 	/**
