@@ -15,10 +15,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.piengine.event;
+package org.piengine.util.event;
 
 /**
- * 
+ * Placeholder for Omnibus implementation.
  *
  * @author Mark Bednarczyk [mark@slytechs.com]
  * @author Sly Technologies Inc.

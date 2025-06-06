@@ -85,8 +85,8 @@
  * @since 0.0.1
  */
 module org.piengine.util {
-	exports org.piengine.event;
 	exports org.piengine.util;
+	exports org.piengine.util.event;
 	exports org.piengine.util.config;
 	exports org.piengine.util.concurrent.locks;
 	
