@@ -24,120 +24,130 @@
 package org.piengine.util.config;
 
 /**
- * The Class ConfigEvent.
+ * Represents a configuration event. This base class captures details about
+ * changes or loads of configuration properties, used by {@link ConfigListener}
+ * to monitor configuration updates.
+ *
+ * @author Mark Bednarczyk [mark@slytechs.com]
+ * @author Sly Technologies Inc.
+ * @see ConfigListener
+ * @see ConfigChangeEvent
+ * @see ConfigLoadEvent
  */
 public class ConfigEvent {
-    
-    /**
-	 * The Enum ChangeType.
+
+	/**
+	 * Enumeration defining types of configuration changes.
 	 */
-    public enum ChangeType { 
- /** The set. */
- SET, 
- /** The remove. */
- REMOVE }
+	public enum ChangeType {
+		/** Indicates a property value was set or updated. */
+		SET,
+		/** Indicates a property was removed. */
+		REMOVE
+	}
 
-    /** The source. */
-    protected final Config source;
-    
-    /** The key. */
-    protected final String key;
-    
-    /** The old value. */
-    protected final String oldValue;
-    
-    /** The new value. */
-    protected final String newValue;
-    
-    /** The type. */
-    protected final Class<?> type;
-    
-    /** The change type. */
-    protected final ChangeType changeType;
-    
-    /** The timestamp. */
-    protected final long timestamp;
+	/** The configuration instance that triggered the event. */
+	protected final Config source;
 
-    /**
-	 * Instantiates a new config event.
+	/** The configuration property key. */
+	protected final String key;
+
+	/** The previous value of the property, if any. */
+	protected final String oldValue;
+
+	/** The new value of the property. */
+	protected final String newValue;
+
+	/** The expected type of the property value. */
+	protected final Class<?> type;
+
+	/** The type of change (set or remove). */
+	protected final ChangeType changeType;
+
+	/** The timestamp when the event occurred. */
+	protected final long timestamp;
+
+	/**
+	 * Constructs a new configuration event.
 	 *
-	 * @param source     the source
-	 * @param key        the key
-	 * @param oldValue   the old value
-	 * @param newValue   the new value
-	 * @param type       the type
-	 * @param changeType the change type
+	 * @param source     the {@link Config} instance that triggered the event
+	 * @param key        the configuration property key
+	 * @param oldValue   the previous value of the property, if any
+	 * @param newValue   the new value of the property
+	 * @param type       the expected type of the property value
+	 * @param changeType the type of change (set or remove)
 	 */
-    public ConfigEvent(Config source, String key, String oldValue, String newValue, Class<?> type, ChangeType changeType) {
-        this.source = source;
-        this.key = key;
-        this.oldValue = oldValue;
-        this.newValue = newValue;
-        this.type = type;
-        this.changeType = changeType;
-        this.timestamp = System.currentTimeMillis();
-    }
+	public ConfigEvent(Config source, String key, String oldValue, String newValue, Class<?> type,
+			ChangeType changeType) {
+		this.source = source;
+		this.key = key;
+		this.oldValue = oldValue;
+		this.newValue = newValue;
+		this.type = type;
+		this.changeType = changeType;
+		this.timestamp = System.currentTimeMillis();
+	}
 
-    /**
-	 * Gets the source.
+	/**
+	 * Retrieves the configuration instance that triggered the event.
 	 *
-	 * @return the source
+	 * @return the {@link Config} instance
 	 */
-    public Config getSource() {
-        return source;
-    }
+	public Config getSource() {
+		return source;
+	}
 
-    /**
-	 * Gets the key.
+	/**
+	 * Retrieves the configuration property key.
 	 *
-	 * @return the key
+	 * @return the property key
 	 */
-    public String getKey() {
-        return key;
-    }
+	public String getKey() {
+		return key;
+	}
 
-    /**
-	 * Gets the old value.
+	/**
+	 * Retrieves the previous value of the property.
 	 *
-	 * @return the old value
+	 * @return the previous value, or {@code null} if none
 	 */
-    public String getOldValue() {
-        return oldValue;
-    }
+	public String getOldValue() {
+		return oldValue;
+	}
 
-    /**
-	 * Gets the new value.
+	/**
+	 * Retrieves the new value of the property.
 	 *
 	 * @return the new value
 	 */
-    public String getNewValue() {
-        return newValue;
-    }
+	public String getNewValue() {
+		return newValue;
+	}
 
-    /**
-	 * Gets the type.
+	/**
+	 * Retrieves the expected type of the property value.
 	 *
-	 * @return the type
+	 * @return the property type
 	 */
-    public Class<?> getType() {
-        return type;
-    }
+	public Class<?> getType() {
+		return type;
+	}
 
-    /**
-	 * Gets the change type.
+	/**
+	 * Retrieves the type of change.
 	 *
-	 * @return the change type
+	 * @return the {@link ChangeType} (set or remove)
 	 */
-    public ChangeType getChangeType() {
-        return changeType;
-    }
+	public ChangeType getChangeType() {
+		return changeType;
+	}
 
-    /**
-	 * Gets the timestamp.
+	/**
+	 * Retrieves the timestamp when the event occurred.
 	 *
-	 * @return the timestamp
+	 * @return the timestamp in milliseconds
 	 */
-    public long getTimestamp() {
-        return timestamp;
-    }
+	public long getTimestamp() {
+		return timestamp;
+	}
 }

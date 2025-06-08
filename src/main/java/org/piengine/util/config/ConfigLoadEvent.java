@@ -24,20 +24,27 @@
 package org.piengine.util.config;
 
 /**
- * The Class ConfigLoadEvent.
+ * Represents a configuration load event. This event is triggered when a
+ * configuration property is loaded from a source, providing details for
+ * registered {@link ConfigListener} instances.
+ *
+ * @author Mark Bednarczyk [mark@slytechs.com]
+ * @author Sly Technologies Inc.
+ * @see ConfigEvent
+ * @see ConfigListener
  */
 public class ConfigLoadEvent extends ConfigEvent {
-    
-    /**
-	 * Instantiates a new config load event.
+
+	/**
+	 * Constructs a new configuration load event.
 	 *
-	 * @param source   the source
-	 * @param key      the key
-	 * @param oldValue the old value
-	 * @param newValue the new value
-	 * @param type     the type
+	 * @param source   the {@link Config} instance that triggered the event
+	 * @param key      the configuration property key
+	 * @param oldValue the previous value of the property, if any
+	 * @param newValue the new value of the property
+	 * @param type     the expected type of the property value
 	 */
-    public ConfigLoadEvent(Config source, String key, String oldValue, String newValue, Class<?> type) {
-        super(source, key, oldValue, newValue, type, ChangeType.SET);
-    }
+	public ConfigLoadEvent(Config source, String key, String oldValue, String newValue, Class<?> type) {
+		super(source, key, oldValue, newValue, type, ChangeType.SET);
+	}
 }

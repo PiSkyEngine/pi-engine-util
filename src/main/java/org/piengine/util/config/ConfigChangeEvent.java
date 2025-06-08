@@ -24,21 +24,29 @@
 package org.piengine.util.config;
 
 /**
- * The Class ConfigChangeEvent.
+ * Represents a configuration change event. This event is triggered when a
+ * configuration property is set or removed, providing details about the change
+ * for registered {@link ConfigListener} instances.
+ *
+ * @author Mark Bednarczyk [mark@slytechs.com]
+ * @author Sly Technologies Inc.
+ * @see ConfigEvent
+ * @see ConfigListener
  */
 public class ConfigChangeEvent extends ConfigEvent {
-    
-    /**
-	 * Instantiates a new config change event.
+
+	/**
+	 * Constructs a new configuration change event.
 	 *
-	 * @param source     the source
-	 * @param key        the key
-	 * @param oldValue   the old value
-	 * @param newValue   the new value
-	 * @param type       the type
-	 * @param changeType the change type
+	 * @param source     the {@link Config} instance that triggered the event
+	 * @param key        the configuration property key
+	 * @param oldValue   the previous value of the property, if any
+	 * @param newValue   the new value of the property
+	 * @param type       the expected type of the property value
+	 * @param changeType the type of change (set or remove)
 	 */
-    public ConfigChangeEvent(Config source, String key, String oldValue, String newValue, Class<?> type, ChangeType changeType) {
-        super(source, key, oldValue, newValue, type, changeType);
-    }
+	public ConfigChangeEvent(Config source, String key, String oldValue, String newValue, Class<?> type,
+			ChangeType changeType) {
+		super(source, key, oldValue, newValue, type, changeType);
+	}
 }

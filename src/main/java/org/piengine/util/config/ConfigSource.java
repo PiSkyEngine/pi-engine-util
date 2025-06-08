@@ -24,35 +24,45 @@
 package org.piengine.util.config;
 
 /**
- * The Interface ConfigSource.
+ * Defines a source for loading and saving configuration data in a configuration
+ * system supporting YAML, JSON, and properties file formats. Implementations
+ * handle interaction with configuration sources, such as files or classpath
+ * resources, and integrate with the package-private
+ * {@link HierarchicalProperties} for data storage.
+ *
+ * @author Mark Bednarczyk [mark@slytechs.com]
+ * @author Sly Technologies Inc.
+ * @see Config
  */
-public interface ConfigSource {
-    
-    /**
-	 * Load.
+interface ConfigSource {
+
+	/**
+	 * Loads configuration data from the source into the provided properties.
 	 *
-	 * @param properties the properties
+	 * @param properties the internal {@link HierarchicalProperties} to load data
+	 *                   into
 	 */
-    void load(HierarchicalProperties properties);
-    
-    /**
-	 * Load override.
+	void load(HierarchicalProperties properties);
+
+	/**
+	 * Loads override configuration data for a specific sub-property.
 	 *
-	 * @param subProperty the sub property
+	 * @param subProperty the sub-property to override (e.g., a profile or context)
 	 */
-    void loadOverride(String subProperty);
-    
-    /**
-	 * Save.
+	void loadOverride(String subProperty);
+
+	/**
+	 * Saves the provided properties to the configuration source.
 	 *
-	 * @param properties the properties
+	 * @param properties the internal {@link HierarchicalProperties} to save
 	 */
-    void save(HierarchicalProperties properties);
-    
-    /**
-	 * Merge.
+	void save(HierarchicalProperties properties);
+
+	/**
+	 * Merges configuration data from the source into the provided properties.
 	 *
-	 * @param properties the properties
+	 * @param properties the internal {@link HierarchicalProperties} to merge data
+	 *                   into
 	 */
-    void merge(HierarchicalProperties properties);
+	void merge(HierarchicalProperties properties);
 }

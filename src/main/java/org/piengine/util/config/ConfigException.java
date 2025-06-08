@@ -24,19 +24,60 @@
 package org.piengine.util.config;
 
 /**
- * The Class ConfigException.
+ * Represents an exception thrown during configuration operations in a
+ * configuration system. This exception is used for errors such as invalid
+ * property values, missing files, or schema validation failures.
+ *
+ * @author Mark Bednarczyk [mark@slytechs.com]
+ * @author Sly Technologies Inc.
  */
 public class ConfigException extends RuntimeException {
-    
-    /** The Constant serialVersionUID. */
-    private static final long serialVersionUID = 2244695120640087258L;
+
+	/** The serial version UID for serialization. */
+	private static final long serialVersionUID = 2244695120640087258L;
 
 	/**
-	 * Instantiates a new config exception.
+	 * Constructs a new configuration exception with the specified message.
 	 *
-	 * @param message the message
+	 * @param message the error message describing the issue
 	 */
 	public ConfigException(String message) {
-        super(message);
-    }
+		super(message);
+	}
+
+	/**
+	 * 
+	 */
+	public ConfigException() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
+	/**
+	 * @param message
+	 * @param cause
+	 * @param enableSuppression
+	 * @param writableStackTrace
+	 */
+	public ConfigException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+		super(message, cause, enableSuppression, writableStackTrace);
+		// TODO Auto-generated constructor stub
+	}
+
+	/**
+	 * @param message
+	 * @param cause
+	 */
+	public ConfigException(String message, Throwable cause) {
+		super(message, cause);
+		// TODO Auto-generated constructor stub
+	}
+
+	/**
+	 * @param cause
+	 */
+	public ConfigException(Throwable cause) {
+		super(cause);
+		// TODO Auto-generated constructor stub
+	}
 }

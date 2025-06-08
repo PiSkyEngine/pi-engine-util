@@ -24,16 +24,24 @@
 package org.piengine.util.config;
 
 /**
- * The Interface ConfigErrorHandler.
+ * Defines a handler for configuration errors. Implementations handle validation
+ * failures for configuration properties, such as type mismatches or missing
+ * values, with customizable behavior based on error severity.
+ *
+ * @author Mark Bednarczyk [mark@slytechs.com]
+ * @author Sly Technologies Inc.
+ * @see Config
+ * @see Property.ErrorLevel
  */
-interface ConfigErrorHandler {
-    
-    /**
-	 * Handle error.
+public interface ConfigErrorHandler {
+
+	/**
+	 * Handles a configuration error for a property.
 	 *
-	 * @param key        the key
-	 * @param message    the message
-	 * @param isCritical the is critical
+	 * @param key        the configuration property key
+	 * @param message    the error message describing the issue
+	 * @param isCritical whether the error is critical (e.g., requires immediate
+	 *                   action)
 	 */
-    void handleError(String key, String message, boolean isCritical);
+	void handleError(String key, String message, boolean isCritical);
 }

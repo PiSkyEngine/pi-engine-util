@@ -24,20 +24,21 @@
 package org.piengine.util.config;
 
 /**
- * The listener interface for receiving config events. The class that is
- * interested in processing a config event implements this interface, and the
- * object created with that class is registered with a component using the
- * component's <code>addConfigListener</code> method. When the config event
- * occurs, that object's appropriate method is invoked.
+ * Defines a listener interface for receiving configuration events.
+ * Implementations are notified of property changes or loads via
+ * {@link ConfigEvent}, registered with a {@link Config} instance.
  *
+ * @author Mark Bednarczyk [mark@slytechs.com]
+ * @author Sly Technologies Inc.
  * @see ConfigEvent
+ * @see Config
  */
-interface ConfigListener {
-    
-    /**
-	 * On config changed.
+public interface ConfigListener {
+
+	/**
+	 * Called when a configuration event occurs, such as a property change or load.
 	 *
-	 * @param event the event
+	 * @param event the {@link ConfigEvent} containing event details
 	 */
-    void onConfigChanged(ConfigEvent event);
+	void onConfigChanged(ConfigEvent event);
 }
