@@ -615,7 +615,6 @@ public class Property {
 			throw new ConfigException("Element type mismatch for " + key + ": expected " + schema.getElementType(key).getSimpleName());
 		}
 		Object value = getRawValue();
-		System.out.println("Property.asList: key=" + key + ", value=" + value + ", type=" + (value != null ? value.getClass().getSimpleName() : "null"));
 		if (value == null) {
 			handleError("Missing property");
 			if (errorLevel == ErrorLevel.WARNING) {
@@ -687,7 +686,6 @@ public class Property {
 			throw new ConfigException("Value type mismatch for " + key + ": expected " + schema.getElementType(key).getSimpleName());
 		}
 		Object value = getRawValue();
-		System.out.println("Property.asMap: key=" + key + ", value=" + value + ", type=" + (value != null ? value.getClass().getSimpleName() : "null"));
 		if (value == null) {
 			handleError("Missing property");
 			if (errorLevel == ErrorLevel.WARNING) {

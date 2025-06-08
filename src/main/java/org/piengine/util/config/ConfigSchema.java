@@ -283,7 +283,6 @@ public class ConfigSchema {
 	public <T> PropertyDef define(String key, Class<T> type, T defaultValue) {
 		PropertyDef def = new PropertyDef(key, type, defaultValue);
 		definitions.put(key, def);
-		System.out.println("ConfigSchema: Defined key=" + key + ", type=" + type.getSimpleName());
 		return def;
 	}
 
@@ -299,7 +298,6 @@ public class ConfigSchema {
 	public <T> PropertyDef defineInstance(String key, Class<T> type, T defaultValue) {
 		PropertyDef def = new PropertyDef(key, type, defaultValue);
 		definitions.put(key, def);
-		System.out.println("ConfigSchema: Defined key=" + key + ", type=" + type.getSimpleName());
 		return def;
 	}
 
@@ -315,7 +313,6 @@ public class ConfigSchema {
 	public <T> PropertyDef defineList(String key, Class<T> elementType, List<T> defaultValue) {
 		PropertyDef def = new PropertyDef(key, List.class, defaultValue, null, elementType);
 		definitions.put(key, def);
-		System.out.println("ConfigSchema: Defined key=" + key + ", type=List, elementType=" + elementType.getSimpleName());
 		return def;
 	}
 
@@ -331,7 +328,6 @@ public class ConfigSchema {
 	public <T> PropertyDef defineMap(String key, Class<T> valueType, Map<String, T> defaultValue) {
 		PropertyDef def = new PropertyDef(key, Map.class, defaultValue, null, valueType);
 		definitions.put(key, def);
-		System.out.println("ConfigSchema: Defined key=" + key + ", type=Map, valueType=" + valueType.getSimpleName());
 		return def;
 	}
 
@@ -347,7 +343,6 @@ public class ConfigSchema {
 	public PropertyDef defineWithParser(String key, Class<?> type, Object defaultValue, Function<String, ?> parser) {
 		PropertyDef def = new PropertyDef(key, type, defaultValue, parser);
 		definitions.put(key, def);
-		System.out.println("ConfigSchema: Defined key=" + key + ", type=" + type.getSimpleName());
 		return def;
 	}
 
@@ -411,9 +406,7 @@ public class ConfigSchema {
 	 * @return true, if is defined
 	 */
 	public boolean isDefined(String key) {
-		boolean defined = definitions.containsKey(key);
-		System.out.println("ConfigSchema: Checking if key=" + key + " is defined: " + defined);
-		return defined;
+		return definitions.containsKey(key);
 	}
 
 	/**

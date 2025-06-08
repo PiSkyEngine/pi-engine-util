@@ -370,9 +370,6 @@ public class Config {
 	 * @param path the path
 	 */
     protected void addSource(String path) {
-        if (schema == null) {
-            System.out.println("Config: Warning - Schema not set before loading source: " + path);
-        }
         ConfigSource source = createSource(path);
         sources.add(source);
         source.load(properties);
@@ -384,9 +381,6 @@ public class Config {
 	 * @param path the path
 	 */
     protected void addClasspathSource(String path) {
-        if (schema == null) {
-            System.out.println("Config: Warning - Schema not set before loading classpath source: " + path);
-        }
         ConfigSource source = createClasspathSource(path);
         sources.add(source);
         source.load(properties);

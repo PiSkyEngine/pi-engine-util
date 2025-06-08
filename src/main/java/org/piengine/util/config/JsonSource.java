@@ -80,7 +80,6 @@ public class JsonSource implements ConfigSource {
     @SuppressWarnings("unchecked")
     @Override
     public void load(HierarchicalProperties properties) {
-        System.out.println("JsonSource: Loading from " + path + ", schema present: " + (config.schema != null));
         try (InputStream is = isClasspath ?
                 Config.class.getClassLoader().getResourceAsStream(path) :
                 new FileInputStream(path)) {
@@ -161,27 +160,21 @@ public class JsonSource implements ConfigSource {
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             String key = prefix.isEmpty() ? entry.getKey() : prefix + "." + entry.getKey();
             Object value = entry.getValue();
-            System.out.println("JsonSource: Flattening key=" + key + ", value=" + value + ", type=" + (value != null ? value.getClass().getSimpleName() : "null") + ", schema defined: " + (config.schema != null && config.schema.isDefined(key)));
             if (config.schema != null && config.schema.isDefined(key)) {
                 Class<?> schemaType = config.schema.getType(key);
                 if (Map.class.isAssignableFrom(schemaType)) {
-                    System.out.println("JsonSource: Storing map for key=" + key + " (defined as Map in schema)");
                     props.put(key, new HashMap<>((Map<String, Object>) value));
                     continue;
                 } else if (List.class.isAssignableFrom(schemaType)) {
-                    System.out.println("JsonSource: Storing list for key=" + key + " (defined as List in schema)");
                     props.put(key, new ArrayList<>((List<?>) value));
                     continue;
                 }
             }
             if (value instanceof Map) {
-                System.out.println("JsonSource: Flattening nested map for key=" + key + " (undefined in schema or not a Map)");
                 flattenMap(key, (Map<String, Object>) value, props);
             } else if (value instanceof List) {
-                System.out.println("JsonSource: Storing list for key=" + key);
                 props.put(key, new ArrayList<>((List<?>) value));
             } else {
-                System.out.println("JsonSource: Storing scalar for key=" + key);
                 props.setProperty(key, value.toString());
             }
         }
@@ -203,7 +196,6 @@ public class JsonSource implements ConfigSource {
                 current = (Map<String, Object>) current.computeIfAbsent(parts[i], _ -> new HashMap<>());
             }
             Object value = properties.getRawProperty(key);
-            System.out.println("JsonSource: Unflattening key=" + key + ", value=" + value + ", type=" + (value != null ? value.getClass().getSimpleName() : "null"));
             current.put(parts[parts.length - 1], value);
         });
         return root;

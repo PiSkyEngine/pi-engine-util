@@ -77,7 +77,6 @@ public class PropertiesSource implements ConfigSource {
     @Override
     public void load(HierarchicalProperties properties) {
         Properties temp = new Properties();
-        System.out.println("PropertiesSource: Loading from " + path + ", schema present: " + (config.schema != null));
         try (InputStream is = isClasspath ?
                 Config.class.getClassLoader().getResourceAsStream(path) :
                 new FileInputStream(path)) {
@@ -87,7 +86,6 @@ public class PropertiesSource implements ConfigSource {
                     String key = k.toString();
                     Object value = parsePropertyValue(key, v.toString());
                     String oldValue = properties.getProperty(key);
-                    System.out.println("PropertiesSource: Loading key=" + key + ", value=" + value + ", type=" + (value != null ? value.getClass().getSimpleName() : "null"));
                     properties.put(key, value);
                     config.fireConfigEvent(key, oldValue, value.toString(), ConfigEvent.ChangeType.SET, false);
                 });
@@ -166,12 +164,10 @@ public class PropertiesSource implements ConfigSource {
     private Object parsePropertyValue(String key, String value) {
         if (config != null && config.schema != null && config.schema.isDefined(key)) {
             Class<?> type = config.schema.getType(key);
-            System.out.println("PropertiesSource: Parsing key=" + key + ", schema type=" + (type != null ? type.getSimpleName() : "null"));
             if (List.class.isAssignableFrom(type)) {
                 List<String> list = Arrays.stream(value.split("\\s*,\\s*"))
                         .filter(s -> !s.isEmpty())
                         .collect(Collectors.toList());
-                System.out.println("PropertiesSource: Parsed List for key=" + key + ", value=" + list);
                 return list;
             } else if (Map.class.isAssignableFrom(type)) {
                 Map<String, String> map = new HashMap<>();
@@ -184,11 +180,9 @@ public class PropertiesSource implements ConfigSource {
                         }
                     }
                 }
-                System.out.println("PropertiesSource: Parsed Map for key=" + key + ", value=" + map);
                 return map;
             }
         }
-        System.out.println("PropertiesSource: No schema or undefined key=" + key + ", storing as String: " + value);
         return value;
     }
 
