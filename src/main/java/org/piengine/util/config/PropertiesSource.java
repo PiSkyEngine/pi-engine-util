@@ -27,7 +27,12 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 /**
  * The Class PropertiesSource.
@@ -71,7 +76,8 @@ public class PropertiesSource implements ConfigSource {
      */
     @Override
     public void load(HierarchicalProperties properties) {
-        HierarchicalProperties temp = new HierarchicalProperties();
+        Properties temp = new Properties();
+        System.out.println("PropertiesSource: Loading from " + path + ", schema present: " + (config.schema != null));
         try (InputStream is = isClasspath ?
                 Config.class.getClassLoader().getResourceAsStream(path) :
                 new FileInputStream(path)) {
@@ -79,9 +85,11 @@ public class PropertiesSource implements ConfigSource {
                 temp.load(is);
                 temp.forEach((k, v) -> {
                     String key = k.toString();
+                    Object value = parsePropertyValue(key, v.toString());
                     String oldValue = properties.getProperty(key);
-                    properties.setProperty(key, v.toString());
-                    config.fireConfigEvent(key, oldValue, v.toString(), ConfigEvent.ChangeType.SET, false);
+                    System.out.println("PropertiesSource: Loading key=" + key + ", value=" + value + ", type=" + (value != null ? value.getClass().getSimpleName() : "null"));
+                    properties.put(key, value);
+                    config.fireConfigEvent(key, oldValue, value.toString(), ConfigEvent.ChangeType.SET, false);
                 });
             }
         } catch (IOException e) {
@@ -103,9 +111,10 @@ public class PropertiesSource implements ConfigSource {
                 overrideProps.load(is);
                 overrideProps.forEach((k, v) -> {
                     String key = k.toString();
+                    Object value = parsePropertyValue(key, v.toString());
                     String oldValue = config.get(key).asString();
-                    config.put(key, v.toString());
-                    config.fireConfigEvent(key, oldValue, v.toString(), ConfigEvent.ChangeType.SET, false);
+                    config.putInstance(key, value);
+                    config.fireConfigEvent(key, oldValue, value.toString(), ConfigEvent.ChangeType.SET, false);
                 });
             }
         } catch (IOException e) {
@@ -119,7 +128,13 @@ public class PropertiesSource implements ConfigSource {
     @Override
     public void save(HierarchicalProperties properties) {
         try (FileOutputStream fos = new FileOutputStream(path)) {
-            properties.store(fos, "Configuration");
+            Properties stringProps = new Properties();
+            properties.forEach((k, v) -> {
+                String key = k.toString();
+                String value = formatPropertyValue(v);
+                stringProps.setProperty(key, value);
+            });
+            stringProps.store(fos, "Configuration");
         } catch (IOException e) {
             throw new ConfigException("Failed to save properties: " + path);
         }
@@ -137,7 +152,62 @@ public class PropertiesSource implements ConfigSource {
             save(properties);
             return;
         }
-        existing.putAll(properties);
+        properties.forEach((k, v) -> existing.put(k, v));
         save(existing);
+    }
+
+    /**
+     * Parse property value for Lists and Maps.
+     *
+     * @param key   the key
+     * @param value the value
+     * @return the parsed value
+     */
+    private Object parsePropertyValue(String key, String value) {
+        if (config != null && config.schema != null && config.schema.isDefined(key)) {
+            Class<?> type = config.schema.getType(key);
+            System.out.println("PropertiesSource: Parsing key=" + key + ", schema type=" + (type != null ? type.getSimpleName() : "null"));
+            if (List.class.isAssignableFrom(type)) {
+                List<String> list = Arrays.stream(value.split("\\s*,\\s*"))
+                        .filter(s -> !s.isEmpty())
+                        .collect(Collectors.toList());
+                System.out.println("PropertiesSource: Parsed List for key=" + key + ", value=" + list);
+                return list;
+            } else if (Map.class.isAssignableFrom(type)) {
+                Map<String, String> map = new HashMap<>();
+                if (!value.trim().isEmpty()) {
+                    String[] pairs = value.split("\\s*,\\s*");
+                    for (String pair : pairs) {
+                        String[] kv = pair.split("=");
+                        if (kv.length == 2) {
+                            map.put(kv[0].trim(), kv[1].trim());
+                        }
+                    }
+                }
+                System.out.println("PropertiesSource: Parsed Map for key=" + key + ", value=" + map);
+                return map;
+            }
+        }
+        System.out.println("PropertiesSource: No schema or undefined key=" + key + ", storing as String: " + value);
+        return value;
+    }
+
+    /**
+     * Format property value for saving.
+     *
+     * @param value the value
+     * @return the formatted string
+     */
+    private String formatPropertyValue(Object value) {
+        if (value instanceof List<?> list) {
+            return list.stream()
+                    .map(Object::toString)
+                    .collect(Collectors.joining(","));
+        } else if (value instanceof Map<?, ?> map) {
+            return map.entrySet().stream()
+                    .map(e -> e.getKey() + "=" + e.getValue())
+                    .collect(Collectors.joining(","));
+        }
+        return value.toString();
     }
 }

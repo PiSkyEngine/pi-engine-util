@@ -27,8 +27,10 @@ import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -76,21 +78,15 @@ public class JsonSource implements ConfigSource {
      * @see org.piengine.util.config.ConfigSource#load(org.piengine.util.config.HierarchicalProperties)
      */
     @SuppressWarnings("unchecked")
-	@Override
+    @Override
     public void load(HierarchicalProperties properties) {
-        HierarchicalProperties temp = new HierarchicalProperties();
+        System.out.println("JsonSource: Loading from " + path + ", schema present: " + (config.schema != null));
         try (InputStream is = isClasspath ?
                 Config.class.getClassLoader().getResourceAsStream(path) :
                 new FileInputStream(path)) {
             if (is != null) {
                 Map<String, Object> map = mapper.readValue(is, Map.class);
-                flattenMap("", map, temp);
-                temp.forEach((k, v) -> {
-                    String key = k.toString();
-                    String oldValue = properties.getProperty(key);
-                    properties.setProperty(key, v.toString());
-                    config.fireConfigEvent(key, oldValue, v.toString(), ConfigEvent.ChangeType.SET, false);
-                });
+                flattenMap("", map, properties);
             }
         } catch (IOException e) {
             throw new ConfigException("Failed to load JSON: " + path);
@@ -101,7 +97,7 @@ public class JsonSource implements ConfigSource {
      * @see org.piengine.util.config.ConfigSource#loadOverride(java.lang.String)
      */
     @SuppressWarnings("unchecked")
-	@Override
+    @Override
     public void loadOverride(String subProperty) {
         String overridePath = path.replaceFirst("\\.(\\w+)$", "-" + subProperty + ".$1");
         try (InputStream is = isClasspath ?
@@ -114,7 +110,7 @@ public class JsonSource implements ConfigSource {
                 overrideProps.forEach((k, v) -> {
                     String key = k.toString();
                     String oldValue = config.get(key).asString();
-                    config.put(key, v.toString());
+                    config.putInstance(key, v);
                     config.fireConfigEvent(key, oldValue, v.toString(), ConfigEvent.ChangeType.SET, false);
                 });
             }
@@ -143,54 +139,73 @@ public class JsonSource implements ConfigSource {
     public void merge(HierarchicalProperties properties) {
         HierarchicalProperties existing = new HierarchicalProperties();
         try (InputStream is = new FileInputStream(path)) {
-            @SuppressWarnings("unchecked")
-			Map<String, Object> map = mapper.readValue(is, Map.class);
+            Map<String, Object> map = mapper.readValue(is, Map.class);
             flattenMap("", map, existing);
         } catch (IOException e) {
             save(properties);
             return;
         }
-        existing.putAll(properties);
+        properties.forEach((k, v) -> existing.put(k, v));
         save(existing);
     }
 
     /**
-	 * Flatten map.
-	 *
-	 * @param prefix the prefix
-	 * @param map    the map
-	 * @param props  the props
-	 */
+     * Flatten map.
+     *
+     * @param prefix the prefix
+     * @param map    the map
+     * @param props  the props
+     */
     @SuppressWarnings("unchecked")
-	private void flattenMap(String prefix, Map<String, Object> map, Properties props) {
+    private void flattenMap(String prefix, Map<String, Object> map, HierarchicalProperties props) {
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             String key = prefix.isEmpty() ? entry.getKey() : prefix + "." + entry.getKey();
             Object value = entry.getValue();
+            System.out.println("JsonSource: Flattening key=" + key + ", value=" + value + ", type=" + (value != null ? value.getClass().getSimpleName() : "null") + ", schema defined: " + (config.schema != null && config.schema.isDefined(key)));
+            if (config.schema != null && config.schema.isDefined(key)) {
+                Class<?> schemaType = config.schema.getType(key);
+                if (Map.class.isAssignableFrom(schemaType)) {
+                    System.out.println("JsonSource: Storing map for key=" + key + " (defined as Map in schema)");
+                    props.put(key, new HashMap<>((Map<String, Object>) value));
+                    continue;
+                } else if (List.class.isAssignableFrom(schemaType)) {
+                    System.out.println("JsonSource: Storing list for key=" + key + " (defined as List in schema)");
+                    props.put(key, new ArrayList<>((List<?>) value));
+                    continue;
+                }
+            }
             if (value instanceof Map) {
+                System.out.println("JsonSource: Flattening nested map for key=" + key + " (undefined in schema or not a Map)");
                 flattenMap(key, (Map<String, Object>) value, props);
+            } else if (value instanceof List) {
+                System.out.println("JsonSource: Storing list for key=" + key);
+                props.put(key, new ArrayList<>((List<?>) value));
             } else {
+                System.out.println("JsonSource: Storing scalar for key=" + key);
                 props.setProperty(key, value.toString());
             }
         }
     }
 
     /**
-	 * Unflatten properties.
-	 *
-	 * @param properties the properties
-	 * @return the map
-	 */
-    @SuppressWarnings("unchecked")
-	private Map<String, Object> unflattenProperties(Properties properties) {
-        Map<String, Object> root = new java.util.HashMap<>();
-        for (String key : properties.stringPropertyNames()) {
+     * Unflatten properties.
+     *
+     * @param properties the properties
+     * @return the map
+     */
+    private Map<String, Object> unflattenProperties(HierarchicalProperties properties) {
+        Map<String, Object> root = new HashMap<>();
+        properties.forEach((k, v) -> {
+            String key = k.toString();
             String[] parts = key.split("\\.");
             Map<String, Object> current = root;
             for (int i = 0; i < parts.length - 1; i++) {
-                current = (Map<String, Object>) current.computeIfAbsent(parts[i], _ -> new java.util.HashMap<>());
+                current = (Map<String, Object>) current.computeIfAbsent(parts[i], _ -> new HashMap<>());
             }
-            current.put(parts[parts.length - 1], properties.getProperty(key));
-        }
+            Object value = properties.getRawProperty(key);
+            System.out.println("JsonSource: Unflattening key=" + key + ", value=" + value + ", type=" + (value != null ? value.getClass().getSimpleName() : "null"));
+            current.put(parts[parts.length - 1], value);
+        });
         return root;
     }
 }

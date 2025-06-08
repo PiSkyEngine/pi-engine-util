@@ -27,6 +27,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
@@ -249,6 +250,79 @@ public class Config {
     }
 
     /**
+	 * Put instance.
+	 *
+	 * @param key   the key
+	 * @param value the value
+	 * @return the config
+	 */
+    public final Config putInstance(String key, Object value) {
+        if (schema != null && !schema.isDefined(key)) {
+            throw new ConfigException("Property '" + key + "' not defined in schema");
+        }
+        Object oldValue = properties.getRawProperty(key);
+        properties.put(key, value);
+        fireConfigEvent(key, oldValue != null ? oldValue.toString() : null, value.toString(), ConfigEvent.ChangeType.SET, true);
+        return this;
+    }
+
+    /**
+	 * Put list.
+	 *
+	 * @param key   the key
+	 * @param value the value
+	 * @return the config
+	 */
+    public final Config putList(String key, List<?> value) {
+        if (schema != null && !schema.isDefined(key)) {
+            throw new ConfigException("Property '" + key + "' not defined in schema");
+        }
+        if (schema != null && !List.class.isAssignableFrom(schema.getType(key))) {
+            throw new ConfigException("Property '" + key + "' is not a List type");
+        }
+        if (schema != null && schema.getElementType(key) != null) {
+            Class<?> elementType = schema.getElementType(key);
+            for (Object item : value) {
+                if (item != null && !elementType.isAssignableFrom(item.getClass())) {
+                    throw new ConfigException("Element type mismatch for '" + key + "': expected " + elementType.getSimpleName());
+                }
+            }
+        }
+        Object oldValue = properties.getRawProperty(key);
+        properties.put(key, value);
+        fireConfigEvent(key, oldValue != null ? oldValue.toString() : null, value.toString(), ConfigEvent.ChangeType.SET, true);
+        return this;
+    }
+
+    /**
+	 * Put map.
+	 *
+	 * @param key   the key
+	 * @param value the value
+	 * @return the config
+	 */
+    public final Config putMap(String key, Map<String, ?> value) {
+        if (schema != null && !schema.isDefined(key)) {
+            throw new ConfigException("Property '" + key + "' not defined in schema");
+        }
+        if (schema != null && !Map.class.isAssignableFrom(schema.getType(key))) {
+            throw new ConfigException("Property '" + key + "' is not a Map type");
+        }
+        if (schema != null && schema.getElementType(key) != null) {
+            Class<?> valueType = schema.getElementType(key);
+            for (Object item : value.values()) {
+                if (item != null && !valueType.isAssignableFrom(item.getClass())) {
+                    throw new ConfigException("Value type mismatch for '" + key + "': expected " + valueType.getSimpleName());
+                }
+            }
+        }
+        Object oldValue = properties.getRawProperty(key);
+        properties.put(key, value);
+        fireConfigEvent(key, oldValue != null ? oldValue.toString() : null, value.toString(), ConfigEvent.ChangeType.SET, true);
+        return this;
+    }
+
+    /**
 	 * Removes the.
 	 *
 	 * @param key the key
@@ -296,6 +370,9 @@ public class Config {
 	 * @param path the path
 	 */
     protected void addSource(String path) {
+        if (schema == null) {
+            System.out.println("Config: Warning - Schema not set before loading source: " + path);
+        }
         ConfigSource source = createSource(path);
         sources.add(source);
         source.load(properties);
@@ -307,6 +384,9 @@ public class Config {
 	 * @param path the path
 	 */
     protected void addClasspathSource(String path) {
+        if (schema == null) {
+            System.out.println("Config: Warning - Schema not set before loading classpath source: " + path);
+        }
         ConfigSource source = createClasspathSource(path);
         sources.add(source);
         source.load(properties);

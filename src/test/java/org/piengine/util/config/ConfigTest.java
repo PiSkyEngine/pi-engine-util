@@ -23,6 +23,7 @@ class ConfigTest {
             server.port=8080
             server=prod
             """;
+    
     private static final String YAML_CONTENT = """
             app:
               debug: true
@@ -31,6 +32,7 @@ class ConfigTest {
             server:
               port: 8080
             """;
+    
     private static final String JSON_CONTENT = """
             {
               "app": {
@@ -44,10 +46,12 @@ class ConfigTest {
               }
             }
             """;
+    
     private static final String PROP_OVERRIDE_CONTENT = """
             server.port=9090
             app.debug=false
             """;
+    
     private static final String SERVER_PROP_CONTENT = """
             server.port=9090
             server.host=example.com

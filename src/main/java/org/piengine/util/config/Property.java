@@ -23,6 +23,10 @@
  */
 package org.piengine.util.config;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 /**
@@ -478,6 +482,31 @@ public class Property {
 	}
 
 	/**
+	 * As instance.
+	 *
+	 * @param <T> the generic type
+	 * @return the t
+	 */
+	public <T> T asInstance() {
+		if (!validateType(Object.class)) {
+			handleError("Type mismatch: expected Object");
+			if (errorLevel == ErrorLevel.WARNING) {
+				return null;
+			}
+			throw new ConfigException("Type mismatch for " + key + ": expected Object");
+		}
+		Object value = getRawValue();
+		if (value == null) {
+			handleError("Missing property");
+			if (errorLevel == ErrorLevel.WARNING) {
+				return null;
+			}
+			throw new ConfigException("Missing property: " + key);
+		}
+		return (T) value;
+	}
+
+	/**
 	 * Or class.
 	 *
 	 * @param <T>          the generic type
@@ -564,6 +593,150 @@ public class Property {
 	}
 
 	/**
+	 * As list.
+	 *
+	 * @param <T>         the generic type
+	 * @param elementType the element type
+	 * @return the list
+	 */
+	public <T> List<T> asList(Class<T> elementType) {
+		if (!validateType(List.class)) {
+			handleError("Type mismatch: expected List");
+			if (errorLevel == ErrorLevel.WARNING) {
+				return null;
+			}
+			throw new ConfigException("Type mismatch for " + key + ": expected List");
+		}
+		if (schema != null && schema.getElementType(key) != null && !elementType.isAssignableFrom(schema.getElementType(key))) {
+			handleError("Element type mismatch: expected " + schema.getElementType(key).getSimpleName());
+			if (errorLevel == ErrorLevel.WARNING) {
+				return null;
+			}
+			throw new ConfigException("Element type mismatch for " + key + ": expected " + schema.getElementType(key).getSimpleName());
+		}
+		Object value = getRawValue();
+		System.out.println("Property.asList: key=" + key + ", value=" + value + ", type=" + (value != null ? value.getClass().getSimpleName() : "null"));
+		if (value == null) {
+			handleError("Missing property");
+			if (errorLevel == ErrorLevel.WARNING) {
+				return null;
+			}
+			throw new ConfigException("Missing property: " + key);
+		}
+		if (!(value instanceof List)) {
+			handleError("Value is not a List: " + value);
+			if (errorLevel == ErrorLevel.WARNING) {
+				return null;
+			}
+			throw new ConfigException("Value for " + key + " is not a List: " + value);
+		}
+		return (List<T>) value;
+	}
+
+	/**
+	 * Or list.
+	 *
+	 * @param <T>          the generic type
+	 * @param elementType  the element type
+	 * @param defaultValue the default value
+	 * @return the list
+	 */
+	public <T> List<T> orList(Class<T> elementType, List<T> defaultValue) {
+		if (!validateType(List.class)) {
+			handleError("Type mismatch: expected List");
+			return defaultValue;
+		}
+		if (schema != null && schema.getElementType(key) != null && !elementType.isAssignableFrom(schema.getElementType(key))) {
+			handleError("Element type mismatch: expected " + schema.getElementType(key).getSimpleName());
+			return defaultValue;
+		}
+		Object value = getRawValue();
+		if (value == null && schema != null && schema.getDefaultValue(key) != null) {
+			value = schema.getDefaultValue(key);
+		}
+		if (value == null) {
+			return defaultValue;
+		}
+		if (!(value instanceof List)) {
+			handleError("Value is not a List: " + value);
+			return defaultValue;
+		}
+		return (List<T>) value;
+	}
+
+	/**
+	 * As map.
+	 *
+	 * @param <T>       the generic type
+	 * @param valueType the value type
+	 * @return the map
+	 */
+	public <T> Map<String, T> asMap(Class<T> valueType) {
+		if (!validateType(Map.class)) {
+			handleError("Type mismatch: expected Map");
+			if (errorLevel == ErrorLevel.WARNING) {
+				return null;
+			}
+			throw new ConfigException("Type mismatch for " + key + ": expected Map");
+		}
+		if (schema != null && schema.getElementType(key) != null && !valueType.isAssignableFrom(schema.getElementType(key))) {
+			handleError("Value type mismatch: expected " + schema.getElementType(key).getSimpleName());
+			if (errorLevel == ErrorLevel.WARNING) {
+				return null;
+			}
+			throw new ConfigException("Value type mismatch for " + key + ": expected " + schema.getElementType(key).getSimpleName());
+		}
+		Object value = getRawValue();
+		System.out.println("Property.asMap: key=" + key + ", value=" + value + ", type=" + (value != null ? value.getClass().getSimpleName() : "null"));
+		if (value == null) {
+			handleError("Missing property");
+			if (errorLevel == ErrorLevel.WARNING) {
+				return null;
+			}
+			throw new ConfigException("Missing property: " + key);
+		}
+		if (!(value instanceof Map)) {
+			handleError("Value is not a Map: " + value);
+			if (errorLevel == ErrorLevel.WARNING) {
+				return null;
+			}
+			throw new ConfigException("Value for " + key + " is not a Map: " + value);
+		}
+		return (Map<String, T>) value;
+	}
+
+	/**
+	 * Or map.
+	 *
+	 * @param <T>          the generic type
+	 * @param valueType    the value type
+	 * @param defaultValue the default value
+	 * @return the map
+	 */
+	public <T> Map<String, T> orMap(Class<T> valueType, Map<String, T> defaultValue) {
+		if (!validateType(Map.class)) {
+			handleError("Type mismatch: expected Map");
+			return defaultValue;
+		}
+		if (schema != null && schema.getElementType(key) != null && !valueType.isAssignableFrom(schema.getElementType(key))) {
+			handleError("Value type mismatch: expected " + schema.getElementType(key).getSimpleName());
+			return defaultValue;
+		}
+		Object value = getRawValue();
+		if (value == null && schema != null && schema.getDefaultValue(key) != null) {
+			value = schema.getDefaultValue(key);
+		}
+		if (value == null) {
+			return defaultValue;
+		}
+		if (!(value instanceof Map)) {
+			handleError("Value is not a Map: " + value);
+			return defaultValue;
+		}
+		return (Map<String, T>) value;
+	}
+
+	/**
 	 * Gets the value.
 	 *
 	 * @return the value
@@ -581,6 +754,39 @@ public class Property {
 			return propValue != null ? propValue : defaultValue;
 		}
 		return properties.getProperty(key);
+	}
+
+	/**
+	 * Gets the raw value.
+	 *
+	 * @return the raw value
+	 */
+	private Object getRawValue() {
+		if (useSystemProperty) {
+			String sysValue = System.getProperty(key);
+			if (sysValue != null) {
+				if (schema != null && schema.isDefined(key)) {
+					Class<?> type = schema.getType(key);
+					if (List.class.isAssignableFrom(type)) {
+						return Arrays.asList(sysValue.split("\\s*,\\s*"));
+					} else if (Map.class.isAssignableFrom(type)) {
+						Map<String, String> map = new HashMap<>();
+						if (!sysValue.trim().isEmpty()) {
+							String[] pairs = sysValue.split("\\s*,\\s*");
+							for (String pair : pairs) {
+								String[] kv = pair.split("=");
+								if (kv.length == 2) {
+									map.put(kv[0].trim(), kv[1].trim());
+								}
+							}
+						}
+						return map;
+					}
+				}
+				return sysValue;
+			}
+		}
+		return properties.getRawProperty(key);
 	}
 
 	/**

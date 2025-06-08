@@ -24,6 +24,7 @@
 package org.piengine.util.config;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -55,6 +56,9 @@ public class ConfigSchema {
 		/** The use system property. */
 		private boolean useSystemProperty;
 
+		/** The element type for collections. */
+		private final Class<?> elementType;
+
 		/**
 		 * Instantiates a new property def.
 		 *
@@ -63,7 +67,7 @@ public class ConfigSchema {
 		 * @param defaultValue the default value.
 		 */
 		PropertyDef(String key, Class<?> type, Object defaultValue) {
-			this(key, type, defaultValue, null);
+			this(key, type, defaultValue, null, null);
 		}
 
 		/**
@@ -75,11 +79,25 @@ public class ConfigSchema {
 		 * @param parser       the parser.
 		 */
 		PropertyDef(String key, Class<?> type, Object defaultValue, Function<String, ?> parser) {
+			this(key, type, defaultValue, parser, null);
+		}
+
+		/**
+		 * Instantiates a new property def with element type for collections.
+		 *
+		 * @param key          the key.
+		 * @param type         the type.
+		 * @param defaultValue the default value.
+		 * @param parser       the parser.
+		 * @param elementType  the element type for collections.
+		 */
+		PropertyDef(String key, Class<?> type, Object defaultValue, Function<String, ?> parser, Class<?> elementType) {
 			super(definitions, rootSchema); // Share parent's definitions and rootSchema
 			this.key = key;
 			this.type = type;
 			this.defaultValue = defaultValue;
 			this.parser = parser;
+			this.elementType = elementType;
 		}
 
 		/**
@@ -120,6 +138,15 @@ public class ConfigSchema {
 		public PropertyDef useSystemProperty() {
 			this.useSystemProperty = true;
 			return this;
+		}
+
+		/**
+		 * Gets the element type for collections.
+		 *
+		 * @return the element type
+		 */
+		public Class<?> getElementType() {
+			return elementType;
 		}
 	}
 
@@ -256,6 +283,55 @@ public class ConfigSchema {
 	public <T> PropertyDef define(String key, Class<T> type, T defaultValue) {
 		PropertyDef def = new PropertyDef(key, type, defaultValue);
 		definitions.put(key, def);
+		System.out.println("ConfigSchema: Defined key=" + key + ", type=" + type.getSimpleName());
+		return def;
+	}
+
+	/**
+	 * Define instance.
+	 *
+	 * @param <T>          the generic type
+	 * @param key          the key
+	 * @param type         the type
+	 * @param defaultValue the default value
+	 * @return the property def
+	 */
+	public <T> PropertyDef defineInstance(String key, Class<T> type, T defaultValue) {
+		PropertyDef def = new PropertyDef(key, type, defaultValue);
+		definitions.put(key, def);
+		System.out.println("ConfigSchema: Defined key=" + key + ", type=" + type.getSimpleName());
+		return def;
+	}
+
+	/**
+	 * Define list.
+	 *
+	 * @param <T>          the generic type
+	 * @param key          the key
+	 * @param elementType  the element type
+	 * @param defaultValue the default value
+	 * @return the property def
+	 */
+	public <T> PropertyDef defineList(String key, Class<T> elementType, List<T> defaultValue) {
+		PropertyDef def = new PropertyDef(key, List.class, defaultValue, null, elementType);
+		definitions.put(key, def);
+		System.out.println("ConfigSchema: Defined key=" + key + ", type=List, elementType=" + elementType.getSimpleName());
+		return def;
+	}
+
+	/**
+	 * Define map.
+	 *
+	 * @param <T>          the generic type
+	 * @param key          the key
+	 * @param valueType    the value type
+	 * @param defaultValue the default value
+	 * @return the property def
+	 */
+	public <T> PropertyDef defineMap(String key, Class<T> valueType, Map<String, T> defaultValue) {
+		PropertyDef def = new PropertyDef(key, Map.class, defaultValue, null, valueType);
+		definitions.put(key, def);
+		System.out.println("ConfigSchema: Defined key=" + key + ", type=Map, valueType=" + valueType.getSimpleName());
 		return def;
 	}
 
@@ -271,6 +347,7 @@ public class ConfigSchema {
 	public PropertyDef defineWithParser(String key, Class<?> type, Object defaultValue, Function<String, ?> parser) {
 		PropertyDef def = new PropertyDef(key, type, defaultValue, parser);
 		definitions.put(key, def);
+		System.out.println("ConfigSchema: Defined key=" + key + ", type=" + type.getSimpleName());
 		return def;
 	}
 
@@ -306,6 +383,17 @@ public class ConfigSchema {
 	}
 
 	/**
+	 * Gets the element type for collections.
+	 *
+	 * @param key the key
+	 * @return the element type
+	 */
+	public Class<?> getElementType(String key) {
+		PropertyDef def = definitions.get(key);
+		return def != null ? def.elementType : null;
+	}
+
+	/**
 	 * Checks if is critical.
 	 *
 	 * @param key the key
@@ -323,7 +411,9 @@ public class ConfigSchema {
 	 * @return true, if is defined
 	 */
 	public boolean isDefined(String key) {
-		return definitions.containsKey(key);
+		boolean defined = definitions.containsKey(key);
+		System.out.println("ConfigSchema: Checking if key=" + key + " is defined: " + defined);
+		return defined;
 	}
 
 	/**

@@ -54,6 +54,25 @@ class HierarchicalProperties extends Properties {
         }
         return null;
     }
+	
+    public Object getRawProperty(String key) {
+        Object value = super.get(key);
+        if (value != null) {
+            return value;
+        }
+        // Check parent packages
+        int lastDot = key.lastIndexOf('.');
+        while (lastDot > 0) {
+            key = key.substring(0, lastDot);
+            value = super.get(key);
+            if (value != null) {
+                return value;
+            }
+            lastDot = key.lastIndexOf('.');
+        }
+        return null;
+    }
+
 
     /**
      * @see java.util.Properties#setProperty(java.lang.String, java.lang.String)
