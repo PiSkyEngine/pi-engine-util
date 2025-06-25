@@ -26,6 +26,7 @@ package org.piengine.util.annotations;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Executable;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -34,84 +35,62 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Utility class for discovering methods annotated with a specific annotation in
- * the PiEngine framework. This class provides methods to parse annotated
- * methods from objects, classes, or interfaces, traversing class hierarchies
- * and interface hierarchies recursively. It is typically used to find methods
- * marked with framework-specific annotations (e.g., {@code @PluginBackground},
- * {@code @PluginUpdatable}, {@code @PluginSharedTask}) for execution in the
- * plugin system.
- * <p>
- * Methods are discovered via reflection, and the framework should validate
- * method signatures after discovery (e.g., {@code void method()} for
- * {@code @PluginBackground}, {@code void method(float tpf)} for
- * {@code @PluginUpdatable}). The class also provides utilities to check if a
- * method or constructor is static or non-static, useful for determining
- * execution context.
- * <p>
- * Example usage:
- * 
- * <pre>
- * Method[] backgroundMethods = Methods.parseObject(PluginBackground.class, plugin);
- * for (Method m : backgroundMethods) {
- * 	// Schedule m for dedicated thread execution
- * }
- * </pre>
- *
- * @author Mark Bednarczyk [mark@slytechs.com]
- * @author Sly Technologies Inc.
+ * The Class Methods.
  */
 public final class Methods {
 
-	public static Method parseMethod(Class<?> cl, String name, Class<?>... parameterTypes) {
-		if (cl == Object.class)
-			return null;
-
-		try {
-			Method method = cl.getDeclaredMethod(name, parameterTypes);
-			return method;
-		} catch (NoSuchMethodException e) {}
-
-		return parseMethod(cl.getSuperclass(), name, parameterTypes);
-	}
-
 	/**
-	 * Parses methods annotated with the specified annotation from the target
-	 * object, class, or array of interfaces. Recursively searches the class
-	 * hierarchy and implemented interfaces.
+	 * Checks if is non static.
 	 *
-	 * @param annotationClass the annotation class to search for
-	 * @param target          the object, class, or array of interfaces to search
-	 * @return an array of annotated methods, or an empty array if none are found
-	 * @throws NullPointerException if {@code annotationClass} is null
+	 * @param target the target
+	 * @return true, if is non static
 	 */
-	public static Method[] parseObject(Class<? extends Annotation> annotationClass, Object target) {
-		if (annotationClass == null) {
-			throw new NullPointerException("annotationClass cannot be null");
-		}
+	public static boolean isNonStatic(Executable target) {
 		if (target == null) {
-			return new Method[0];
+			throw new NullPointerException("target cannot be null");
 		}
-
-		if (target instanceof Class<?>[] interfaces) {
-			return parseInterfaces(annotationClass, interfaces);
-		}
-
-		if (target instanceof Class<?> cl) {
-			return parseClass(annotationClass, cl);
-		}
-
-		return parseClass(annotationClass, target.getClass());
+		return !Modifier.isStatic(target.getModifiers());
 	}
 
 	/**
-	 * Parses methods annotated with the specified annotation from the target class,
-	 * its superclasses, and implemented interfaces.
+	 * Checks if is static.
 	 *
-	 * @param annotationClass the annotation class to search for
-	 * @param target          the class to search
-	 * @return an array of annotated methods, or an empty array if none are found
-	 * @throws NullPointerException if {@code annotationClass} is null
+	 * @param target the target
+	 * @return true, if is static
+	 */
+	public static boolean isStatic(Executable target) {
+		if (target == null) {
+			throw new NullPointerException("target cannot be null");
+		}
+		return Modifier.isStatic(target.getModifiers());
+	}
+
+	/**
+	 * New default constructor instance.
+	 *
+	 * @param cl the cl
+	 * @return the object
+	 */
+	public static <T> T newDefaultConstructorInstance(Class<T> cl) {
+		try {
+			var c = cl.getConstructor();
+
+			return c.newInstance();
+		} catch (NoSuchMethodException
+				| InstantiationException
+				| IllegalAccessException
+				| IllegalArgumentException
+				| InvocationTargetException e) {
+			return null;
+		}
+	}
+
+	/**
+	 * Parses the class.
+	 *
+	 * @param annotationClass the annotation class
+	 * @param target          the target
+	 * @return the method[]
 	 */
 	public static Method[] parseClass(Class<? extends Annotation> annotationClass, Class<?> target) {
 		if (annotationClass == null) {
@@ -144,71 +123,11 @@ public final class Methods {
 	}
 
 	/**
-	 * Parses methods annotated with the specified annotation from the provided
-	 * method array.
+	 * Parses the interfaces.
 	 *
-	 * @param annotationClass the annotation class to search for
-	 * @param methods         the methods to search
-	 * @return an array of annotated methods, or an empty array if none are found
-	 * @throws NullPointerException if {@code annotationClass} or {@code methods} is
-	 *                              null
-	 */
-	public static Method[] parseMethods(Class<? extends Annotation> annotationClass, Method... methods) {
-		if (annotationClass == null) {
-			throw new NullPointerException("annotationClass cannot be null");
-		}
-		if (methods == null) {
-			throw new NullPointerException("methods cannot be null");
-		}
-
-		List<Method> annotatedMethods = new ArrayList<>(methods.length);
-		for (Method method : methods) {
-			if (method.isAnnotationPresent(annotationClass)) {
-				annotatedMethods.add(method);
-			}
-		}
-
-		return annotatedMethods.toArray(new Method[0]);
-	}
-
-	/**
-	 * Checks if the specified executable (method or constructor) is static.
-	 *
-	 * @param target the executable to check
-	 * @return {@code true} if the executable is static, {@code false} otherwise
-	 * @throws NullPointerException if {@code target} is null
-	 */
-	public static boolean isStatic(Executable target) {
-		if (target == null) {
-			throw new NullPointerException("target cannot be null");
-		}
-		return Modifier.isStatic(target.getModifiers());
-	}
-
-	/**
-	 * Checks if the specified executable (method or constructor) is non-static
-	 * (instance method).
-	 *
-	 * @param target the executable to check
-	 * @return {@code true} if the executable is non-static, {@code false} otherwise
-	 * @throws NullPointerException if {@code target} is null
-	 */
-	public static boolean isNonStatic(Executable target) {
-		if (target == null) {
-			throw new NullPointerException("target cannot be null");
-		}
-		return !Modifier.isStatic(target.getModifiers());
-	}
-
-	/**
-	 * Parses methods annotated with the specified annotation from the target
-	 * interfaces.
-	 *
-	 * @param annotationClass the annotation class to search for
-	 * @param interfaces      the interfaces to search
-	 * @return an array of annotated methods, or an empty array if none are found
-	 * @throws NullPointerException if {@code annotationClass} or {@code interfaces}
-	 *                              is null
+	 * @param annotationClass the annotation class
+	 * @param interfaces      the interfaces
+	 * @return the method[]
 	 */
 	public static Method[] parseInterfaces(Class<? extends Annotation> annotationClass, Class<?>... interfaces) {
 		if (annotationClass == null) {
@@ -221,16 +140,12 @@ public final class Methods {
 	}
 
 	/**
-	 * Internal method to parse methods annotated with the specified annotation from
-	 * the target interfaces, tracking visited interfaces to avoid redundant
-	 * processing.
+	 * Parses the interfaces.
 	 *
-	 * @param annotationClass the annotation class to search for
-	 * @param visited         the set of interfaces already processed
-	 * @param target          the interfaces to search
-	 * @return an array of annotated methods, or an empty array if none are found
-	 * @throws NullPointerException if {@code annotationClass}, {@code visited}, or
-	 *                              {@code target} is null
+	 * @param annotationClass the annotation class
+	 * @param visited         the visited
+	 * @param target          the target
+	 * @return the method[]
 	 */
 	private static Method[] parseInterfaces(Class<? extends Annotation> annotationClass, Set<Class<?>> visited,
 			Class<?>... target) {
@@ -267,7 +182,78 @@ public final class Methods {
 	}
 
 	/**
-	 * Private constructor to prevent instantiation.
+	 * Parses the method.
+	 *
+	 * @param cl             the cl
+	 * @param name           the name
+	 * @param parameterTypes the parameter types
+	 * @return the method
+	 */
+	public static Method parseMethod(Class<?> cl, String name, Class<?>... parameterTypes) {
+		if (cl == Object.class)
+			return null;
+
+		try {
+			Method method = cl.getDeclaredMethod(name, parameterTypes);
+			return method;
+		} catch (NoSuchMethodException e) {}
+
+		return parseMethod(cl.getSuperclass(), name, parameterTypes);
+	}
+
+	/**
+	 * Parses the methods.
+	 *
+	 * @param annotationClass the annotation class
+	 * @param methods         the methods
+	 * @return the method[]
+	 */
+	public static Method[] parseMethods(Class<? extends Annotation> annotationClass, Method... methods) {
+		if (annotationClass == null) {
+			throw new NullPointerException("annotationClass cannot be null");
+		}
+		if (methods == null) {
+			throw new NullPointerException("methods cannot be null");
+		}
+
+		List<Method> annotatedMethods = new ArrayList<>(methods.length);
+		for (Method method : methods) {
+			if (method.isAnnotationPresent(annotationClass)) {
+				annotatedMethods.add(method);
+			}
+		}
+
+		return annotatedMethods.toArray(new Method[0]);
+	}
+
+	/**
+	 * Parses the object.
+	 *
+	 * @param annotationClass the annotation class
+	 * @param target          the target
+	 * @return the method[]
+	 */
+	public static Method[] parseObject(Class<? extends Annotation> annotationClass, Object target) {
+		if (annotationClass == null) {
+			throw new NullPointerException("annotationClass cannot be null");
+		}
+		if (target == null) {
+			return new Method[0];
+		}
+
+		if (target instanceof Class<?>[] interfaces) {
+			return parseInterfaces(annotationClass, interfaces);
+		}
+
+		if (target instanceof Class<?> cl) {
+			return parseClass(annotationClass, cl);
+		}
+
+		return parseClass(annotationClass, target.getClass());
+	}
+
+	/**
+	 * Instantiates a new methods.
 	 */
 	private Methods() {
 		// Utility class, not instantiable
