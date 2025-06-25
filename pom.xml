@@ -13,7 +13,7 @@
     <artifactId>pi-engine-util</artifactId>
     <packaging>jar</packaging>
 
-    <name>PI Engine Utilities, Concurrency, Locks</name>
+    <name>PI Engine Utils, Locks, Event Bus, Inject, Config</name>
     <description>Common utilities module for the Pie in the Sky 3D Graphics Engine, providing locks, event handling (Omnibus), and general utilities.</description>
     <url>https://piengine.org</url>
 

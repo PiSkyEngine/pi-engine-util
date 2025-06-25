@@ -31,25 +31,26 @@ package org.piengine.util.config;
  * @author Mark Bednarczyk [mark@slytechs.com]
  * @author Sly Technologies Inc.
  */
-public class ConfigException extends Exception {
+public class ConfigRuntimeException extends RuntimeException {
 
 	/** The serial version UID for serialization. */
-	private static final long serialVersionUID = 763449475830548650L;
+	private static final long serialVersionUID = 2244695120640087258L;
 
 	/**
 	 * Constructs a new configuration exception with the specified message.
 	 *
 	 * @param message the error message describing the issue
 	 */
-	public ConfigException(String message) {
+	public ConfigRuntimeException(String message) {
 		super(message);
 	}
 
 	/**
 	 * 
 	 */
-	public ConfigException() {
+	public ConfigRuntimeException() {
 		super();
+		// TODO Auto-generated constructor stub
 	}
 
 	/**
@@ -58,22 +59,25 @@ public class ConfigException extends Exception {
 	 * @param enableSuppression
 	 * @param writableStackTrace
 	 */
-	public ConfigException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+	public ConfigRuntimeException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
 		super(message, cause, enableSuppression, writableStackTrace);
+		// TODO Auto-generated constructor stub
 	}
 
 	/**
 	 * @param message
 	 * @param cause
 	 */
-	public ConfigException(String message, Throwable cause) {
+	public ConfigRuntimeException(String message, Throwable cause) {
 		super(message, cause);
+		// TODO Auto-generated constructor stub
 	}
 
 	/**
 	 * @param cause
 	 */
-	public ConfigException(Throwable cause) {
+	public ConfigRuntimeException(Throwable cause) {
 		super(cause);
+		// TODO Auto-generated constructor stub
 	}
 }

@@ -1,5 +1,7 @@
 package org.piengine.util.config;
 
+import java.io.IOException;
+
 /**
  * Component-specific configuration for server settings.
  */
@@ -19,7 +21,7 @@ public class ServerConfig extends Config {
                 .define(SERVER_HOST_KEY, String.class, "localhost");
     }
 
-    public ServerConfig(String path) {
+    public ServerConfig(String path) throws ConfigNotFound, IOException {
         this();
         addSource(path);
     }

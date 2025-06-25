@@ -23,6 +23,8 @@
  */
 package org.piengine.util.config;
 
+import java.io.IOException;
+
 /**
  * Defines a source for loading and saving configuration data in a configuration
  * system supporting YAML, JSON, and properties file formats. Implementations
@@ -41,22 +43,25 @@ interface ConfigSource {
 	 *
 	 * @param properties the internal {@link HierarchicalProperties} to load data
 	 *                   into
+	 * @throws ConfigNotFound
 	 */
-	void load(HierarchicalProperties properties);
+	void load(HierarchicalProperties properties) throws ConfigNotFound, IOException;
 
 	/**
 	 * Loads override configuration data for a specific sub-property.
 	 *
 	 * @param subProperty the sub-property to override (e.g., a profile or context)
+	 * @throws ConfigNotFound
+	 * @throws IOException
 	 */
-	void loadOverride(String subProperty);
+	void loadOverride(String subProperty) throws ConfigNotFound, IOException;
 
 	/**
 	 * Saves the provided properties to the configuration source.
 	 *
 	 * @param properties the internal {@link HierarchicalProperties} to save
 	 */
-	void save(HierarchicalProperties properties);
+	void save(HierarchicalProperties properties) throws IOException;
 
 	/**
 	 * Merges configuration data from the source into the provided properties.
@@ -64,5 +69,5 @@ interface ConfigSource {
 	 * @param properties the internal {@link HierarchicalProperties} to merge data
 	 *                   into
 	 */
-	void merge(HierarchicalProperties properties);
+	void merge(HierarchicalProperties properties) throws IOException;
 }

@@ -35,16 +35,20 @@ import java.util.Map;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * A {@link ConfigSource} implementation for loading and saving configuration properties
- * from JSON files. This class supports both file-based and classpath resources, hierarchical
- * property resolution, and environment-specific overrides. It integrates with a {@link Config}
- * instance to manage properties and fire events on updates, using a {@link ConfigSchema} for
- * type validation when defined.
+ * A {@link ConfigSource} implementation for loading and saving configuration
+ * properties from JSON files. This class supports both file-based and classpath
+ * resources, hierarchical property resolution, and environment-specific
+ * overrides. It integrates with a {@link Config} instance to manage properties
+ * and fire events on updates, using a {@link ConfigSchema} for type validation
+ * when defined.
  *
- * <p>Properties are stored in a package-private {@link HierarchicalProperties} instance,
- * with nested JSON objects flattened into dot-separated keys (e.g., {@code parent.child=value}).
- * The class supports saving and merging configurations back to JSON files, preserving schema-defined
- * types for collections like {@link List} and {@link Map}.</p>
+ * <p>
+ * Properties are stored in a package-private {@link HierarchicalProperties}
+ * instance, with nested JSON objects flattened into dot-separated keys (e.g.,
+ * {@code parent.child=value}). The class supports saving and merging
+ * configurations back to JSON files, preserving schema-defined types for
+ * collections like {@link List} and {@link Map}.
+ * </p>
  *
  * @author Mark Bednarczyk [mark@slytechs.com]
  * @author Sly Technologies Inc.
@@ -75,10 +79,12 @@ class JsonSource implements ConfigSource {
 	}
 
 	/**
-	 * Creates a new JSON configuration source, specifying whether it is a classpath resource.
+	 * Creates a new JSON configuration source, specifying whether it is a classpath
+	 * resource.
 	 *
 	 * @param path        the path to the JSON file
-	 * @param isClasspath true if the file is a classpath resource, false for a file system path
+	 * @param isClasspath true if the file is a classpath resource, false for a file
+	 *                    system path
 	 * @param config      the {@link Config} instance to manage properties
 	 */
 	public JsonSource(String path, boolean isClasspath, Config config) {
@@ -88,42 +94,47 @@ class JsonSource implements ConfigSource {
 	}
 
 	/**
-	 * Loads configuration properties from the JSON file into the provided properties store.
-	 * Nested JSON objects are flattened into dot-separated keys, and schema-defined types
-	 * (e.g., {@link List}, {@link Map}) are preserved.
+	 * Loads configuration properties from the JSON file into the provided
+	 * properties store. Nested JSON objects are flattened into dot-separated keys,
+	 * and schema-defined types (e.g., {@link List}, {@link Map}) are preserved.
 	 *
-	 * @param properties the {@link HierarchicalProperties} to store loaded properties
-	 * @throws ConfigException if the JSON file cannot be read or parsed
+	 * @param properties the {@link HierarchicalProperties} to store loaded
+	 *                   properties
+	 * @throws ConfigRuntimeException if the JSON file cannot be read or parsed
 	 * @see ConfigSource#load(HierarchicalProperties)
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public void load(HierarchicalProperties properties) {
-		try (InputStream is = isClasspath ? Config.class.getClassLoader().getResourceAsStream(path)
+		try (InputStream is = isClasspath
+				? config.getClass().getResourceAsStream(path)
 				: new FileInputStream(path)) {
 			if (is != null) {
 				Map<String, Object> map = mapper.readValue(is, Map.class);
 				flattenMap("", map, properties);
 			}
 		} catch (IOException e) {
-			throw new ConfigException("Failed to load JSON: " + path, e);
+			throw new ConfigRuntimeException("Failed to load JSON: " + path, e);
 		}
 	}
 
 	/**
-	 * Loads environment-specific override properties from a JSON file (e.g., {@code config-prod.json}).
-	 * Overrides are applied to the {@link Config} instance, firing events for updated properties.
-	 * If the override file is not found, the operation is silently ignored.
+	 * Loads environment-specific override properties from a JSON file (e.g.,
+	 * {@code config-prod.json}). Overrides are applied to the {@link Config}
+	 * instance, firing events for updated properties. If the override file is not
+	 * found, the operation is silently ignored.
 	 *
-	 * @param subProperty the suffix for the override file (e.g., "prod" for {@code config-prod.json})
+	 * @param subProperty the suffix for the override file (e.g., "prod" for
+	 *                    {@code config-prod.json})
 	 * @see ConfigSource#loadOverride(String)
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
 	public void loadOverride(String subProperty) {
 		String overridePath = path.replaceFirst("\\.(\\w+)$", "-" + subProperty + ".$1");
-		try (InputStream is = isClasspath ? Config.class.getClassLoader().getResourceAsStream(overridePath)
-				: new FileInputStream(overridePath)) {
+		try (InputStream is = isClasspath
+				? config.getClass().getResourceAsStream(overridePath)
+				: new FileInputStream(path)) {
 			if (is != null) {
 				Map<String, Object> map = mapper.readValue(is, Map.class);
 				HierarchicalProperties overrideProps = new HierarchicalProperties();
@@ -141,11 +152,12 @@ class JsonSource implements ConfigSource {
 	}
 
 	/**
-	 * Saves the provided properties to the JSON file, unflattening dot-separated keys into
-	 * nested JSON objects. Schema-defined types for collections are preserved.
+	 * Saves the provided properties to the JSON file, unflattening dot-separated
+	 * keys into nested JSON objects. Schema-defined types for collections are
+	 * preserved.
 	 *
 	 * @param properties the {@link HierarchicalProperties} to save
-	 * @throws ConfigException if the JSON file cannot be written
+	 * @throws ConfigRuntimeException if the JSON file cannot be written
 	 * @see ConfigSource#save(HierarchicalProperties)
 	 */
 	@Override
@@ -154,16 +166,17 @@ class JsonSource implements ConfigSource {
 		try (FileWriter writer = new FileWriter(path)) {
 			mapper.writeValue(writer, map);
 		} catch (IOException e) {
-			throw new ConfigException("Failed to save JSON: " + path, e);
+			throw new ConfigRuntimeException("Failed to save JSON: " + path, e);
 		}
 	}
 
 	/**
-	 * Merges the provided properties with existing JSON file content, saving the combined result.
-	 * If the JSON file does not exist, the provided properties are saved directly.
+	 * Merges the provided properties with existing JSON file content, saving the
+	 * combined result. If the JSON file does not exist, the provided properties are
+	 * saved directly.
 	 *
 	 * @param properties the {@link HierarchicalProperties} to merge
-	 * @throws ConfigException if the JSON file cannot be read or written
+	 * @throws ConfigRuntimeException if the JSON file cannot be read or written
 	 * @see ConfigSource#merge(HierarchicalProperties)
 	 */
 	@Override
@@ -183,12 +196,13 @@ class JsonSource implements ConfigSource {
 
 	/**
 	 * Flattens a nested JSON map into dot-separated property keys for storage.
-	 * Schema-defined types (e.g., {@link List}, {@link Map}) are preserved as objects,
-	 * while other values are converted to strings.
+	 * Schema-defined types (e.g., {@link List}, {@link Map}) are preserved as
+	 * objects, while other values are converted to strings.
 	 *
 	 * @param prefix the current key prefix (e.g., "parent" for "parent.child")
 	 * @param map    the JSON map to flatten
-	 * @param props  the {@link HierarchicalProperties} to store flattened properties
+	 * @param props  the {@link HierarchicalProperties} to store flattened
+	 *               properties
 	 */
 	@SuppressWarnings("unchecked")
 	private void flattenMap(String prefix, Map<String, Object> map, HierarchicalProperties props) {

@@ -24,6 +24,7 @@
 package org.piengine.util.config;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -83,6 +84,16 @@ public class Config {
 	protected final List<ListenerEntry> listeners;
 
 	/**
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return ""
+				+ "" + getClass().getSimpleName()
+				+ " " + properties;
+	}
+
+	/**
 	 * Constructs a new {@code Config} instance with an empty internal properties
 	 * store.
 	 */
@@ -109,9 +120,12 @@ public class Config {
 	 *
 	 * @param path the path to the configuration file
 	 * @return a new {@code Config} instance with the loaded configuration
-	 * @throws ConfigException if the file is not found or has an unsupported format
+	 * @throws IOException
+	 * @throws ConfigNotFound
+	 * @throws ConfigRuntimeException if the file is not found or has an unsupported
+	 *                                format
 	 */
-	public static final Config load(String path) {
+	public static final Config load(String path) throws ConfigNotFound, IOException {
 		Config config = new Config();
 		config.addSource(path);
 		return config;
@@ -124,9 +138,13 @@ public class Config {
 	 * @param path          the path to the configuration file
 	 * @param configFactory the factory to create the config instance
 	 * @return the config instance with the loaded configuration
-	 * @throws ConfigException if the file is not found or has an unsupported format
+	 * @throws IOException
+	 * @throws ConfigNotFound
+	 * @throws ConfigRuntimeException if the file is not found or has an unsupported
+	 *                                format
 	 */
-	public static final <T extends Config> T load(String path, Supplier<T> configFactory) {
+	public static final <T extends Config> T load(String path, Supplier<T> configFactory) throws ConfigNotFound,
+			IOException {
 		T config = configFactory.get();
 		config.addSource(path);
 		return config;
@@ -137,10 +155,12 @@ public class Config {
 	 *
 	 * @param path the path to the classpath resource
 	 * @return a new {@code Config} instance with the loaded configuration
-	 * @throws ConfigException if the resource is not found or has an unsupported
-	 *                         format
+	 * @throws IOException
+	 * @throws ConfigNotFound
+	 * @throws ConfigRuntimeException if the resource is not found or has an
+	 *                                unsupported format
 	 */
-	public static final Config loadFromClasspath(String path) {
+	public static final Config loadFromClasspath(String path) throws ConfigNotFound, IOException {
 		Config config = new Config();
 		config.addClasspathSource(path);
 		return config;
@@ -154,9 +174,13 @@ public class Config {
 	 * @param path          the path to the classpath resource
 	 * @param configFactory the factory to create the config instance
 	 * @return the config instance with the loaded configuration
-	 * @throws ConfigException if the file is not found or has an unsupported format
+	 * @throws IOException
+	 * @throws ConfigNotFound
+	 * @throws ConfigRuntimeException if the file is not found or has an unsupported
+	 *                                format
 	 */
-	public static final <T extends Config> T loadFromClasspath(String path, Supplier<T> configFactory) {
+	public static final <T extends Config> T loadFromClasspath(String path, Supplier<T> configFactory)
+			throws ConfigNotFound, IOException {
 		T config = configFactory.get();
 		config.addClasspathSource(path);
 		return config;
@@ -170,8 +194,34 @@ public class Config {
 	 * @return this {@code Config} instance for method chaining
 	 */
 	public final Config withOverrideConfig(String subProperty) {
-		sources.forEach(source -> source.loadOverride(subProperty));
-		return this;
+	    System.out.println("=== withOverrideConfig('" + subProperty + "') called ===");
+	    System.out.println("Number of sources: " + sources.size());
+	    
+	    sources.forEach(source -> {
+	        try {
+	            System.out.println("Processing source: " + source.getClass().getSimpleName());
+	            
+	            // Capture the state before override
+	            System.out.println("Properties before override:");
+	            System.out.println("  server.port = " + properties.getProperty("server.port"));
+	            System.out.println("  app.debug = " + properties.getProperty("app.debug"));
+	            
+	            // Load the override
+	            System.out.println("Calling source.loadOverride('" + subProperty + "')...");
+	            source.loadOverride(subProperty);
+	            
+	            System.out.println("Properties after override:");
+	            System.out.println("  server.port = " + properties.getProperty("server.port"));
+	            System.out.println("  app.debug = " + properties.getProperty("app.debug"));
+	            
+	            // TODO: Add event firing logic here after we see what's happening
+	            
+	        } catch (ConfigNotFound | IOException e) {
+	            System.out.println("Exception in loadOverride: " + e.getMessage());
+	            e.printStackTrace();
+	        }
+	    });
+	    return this;
 	}
 
 	/**
@@ -262,11 +312,11 @@ public class Config {
 	 *
 	 * @param key the property key
 	 * @return a {@link Property} instance for accessing the property's value
-	 * @throws ConfigException if the key is not defined in the schema
+	 * @throws ConfigRuntimeException if the key is not defined in the schema
 	 */
 	public final Property get(String key) {
 		if (schema != null && !schema.isDefined(key)) {
-			throw new ConfigException("Property '" + key + "' not defined in schema");
+			throw new ConfigRuntimeException("Property '" + key + "' not defined in schema");
 		}
 		return new Property(key, properties, schema, this);
 	}
@@ -277,11 +327,11 @@ public class Config {
 	 * @param key   the property key
 	 * @param value the property value
 	 * @return this {@code Config} instance for method chaining
-	 * @throws ConfigException if the key is not defined in the schema
+	 * @throws ConfigRuntimeException if the key is not defined in the schema
 	 */
 	public final Config put(String key, Object value) {
 		if (schema != null && !schema.isDefined(key)) {
-			throw new ConfigException("Property '" + key + "' not defined in schema");
+			throw new ConfigRuntimeException("Property '" + key + "' not defined in schema");
 		}
 		String oldValue = properties.getProperty(key);
 		properties.setProperty(key, value.toString());
@@ -295,11 +345,11 @@ public class Config {
 	 * @param key   the property key
 	 * @param value the property value
 	 * @return this {@code Config} instance for method chaining
-	 * @throws ConfigException if the key is not defined in the schema
+	 * @throws ConfigRuntimeException if the key is not defined in the schema
 	 */
 	public final Config putInstance(String key, Object value) {
 		if (schema != null && !schema.isDefined(key)) {
-			throw new ConfigException("Property '" + key + "' not defined in schema");
+			throw new ConfigRuntimeException("Property '" + key + "' not defined in schema");
 		}
 		Object oldValue = properties.getRawProperty(key);
 		properties.put(key, value);
@@ -314,21 +364,21 @@ public class Config {
 	 * @param key   the property key
 	 * @param value the list value
 	 * @return this {@code Config} instance for method chaining
-	 * @throws ConfigException if the key is not defined, not a list type, or
-	 *                         elements mismatch the schema
+	 * @throws ConfigRuntimeException if the key is not defined, not a list type, or
+	 *                                elements mismatch the schema
 	 */
 	public final Config putList(String key, List<?> value) {
 		if (schema != null && !schema.isDefined(key)) {
-			throw new ConfigException("Property '" + key + "' not defined in schema");
+			throw new ConfigRuntimeException("Property '" + key + "' not defined in schema");
 		}
 		if (schema != null && !List.class.isAssignableFrom(schema.getType(key))) {
-			throw new ConfigException("Property '" + key + "' is not a List type");
+			throw new ConfigRuntimeException("Property '" + key + "' is not a List type");
 		}
 		if (schema != null && schema.getElementType(key) != null) {
 			Class<?> elementType = schema.getElementType(key);
 			for (Object item : value) {
 				if (item != null && !elementType.isAssignableFrom(item.getClass())) {
-					throw new ConfigException("Element type mismatch for '" + key + "': expected " + elementType
+					throw new ConfigRuntimeException("Element type mismatch for '" + key + "': expected " + elementType
 							.getSimpleName());
 				}
 			}
@@ -346,21 +396,21 @@ public class Config {
 	 * @param key   the property key
 	 * @param value the map value with string keys
 	 * @return this {@code Config} instance for method chaining
-	 * @throws ConfigException if the key is not defined, not a map type, or values
-	 *                         mismatch the schema
+	 * @throws ConfigRuntimeException if the key is not defined, not a map type, or
+	 *                                values mismatch the schema
 	 */
 	public final Config putMap(String key, Map<String, ?> value) {
 		if (schema != null && !schema.isDefined(key)) {
-			throw new ConfigException("Property '" + key + "' not defined in schema");
+			throw new ConfigRuntimeException("Property '" + key + "' not defined in schema");
 		}
 		if (schema != null && !Map.class.isAssignableFrom(schema.getType(key))) {
-			throw new ConfigException("Property '" + key + "' is not a Map type");
+			throw new ConfigRuntimeException("Property '" + key + "' is not a Map type");
 		}
 		if (schema != null && schema.getElementType(key) != null) {
 			Class<?> valueType = schema.getElementType(key);
 			for (Object item : value.values()) {
 				if (item != null && !valueType.isAssignableFrom(item.getClass())) {
-					throw new ConfigException("Value type mismatch for '" + key + "': expected " + valueType
+					throw new ConfigRuntimeException("Value type mismatch for '" + key + "': expected " + valueType
 							.getSimpleName());
 				}
 			}
@@ -377,11 +427,11 @@ public class Config {
 	 *
 	 * @param key the property key
 	 * @return this {@code Config} instance for method chaining
-	 * @throws ConfigException if the key is not defined in the schema
+	 * @throws ConfigRuntimeException if the key is not defined in the schema
 	 */
 	public final Config remove(String key) {
 		if (schema != null && !schema.isDefined(key)) {
-			throw new ConfigException("Property '" + key + "' not defined in schema");
+			throw new ConfigRuntimeException("Property '" + key + "' not defined in schema");
 		}
 		String oldValue = properties.getProperty(key);
 		if (oldValue != null) {
@@ -396,10 +446,11 @@ public class Config {
 	 *
 	 * @param path the path to save the configuration file
 	 * @return this {@code Config} instance for method chaining
-	 * @throws ConfigException if the file cannot be written or has an unsupported
-	 *                         format
+	 * @throws IOException
+	 * @throws ConfigRuntimeException if the file cannot be written or has an
+	 *                                unsupported format
 	 */
-	public final Config save(String path) {
+	public final Config save(String path) throws IOException {
 		ConfigSource source = createSource(path);
 		source.save(properties);
 		return this;
@@ -410,9 +461,11 @@ public class Config {
 	 *
 	 * @param path the path to the configuration file
 	 * @return this {@code Config} instance for method chaining
-	 * @throws ConfigException if the file is not found or has an unsupported format
+	 * @throws IOException
+	 * @throws ConfigRuntimeException if the file is not found or has an unsupported
+	 *                                format
 	 */
-	public final Config merge(String path) {
+	public final Config merge(String path) throws IOException {
 		ConfigSource source = createSource(path);
 		source.merge(properties);
 		return this;
@@ -422,9 +475,12 @@ public class Config {
 	 * Adds a configuration source from a file at the specified path.
 	 *
 	 * @param path the path to the configuration file
-	 * @throws ConfigException if the file is not found or has an unsupported format
+	 * @throws IOException
+	 * @throws ConfigNotFound
+	 * @throws ConfigRuntimeException if the file is not found or has an unsupported
+	 *                                format
 	 */
-	protected void addSource(String path) {
+	protected void addSource(String path) throws ConfigNotFound, IOException {
 		ConfigSource source = createSource(path);
 		sources.add(source);
 		source.load(properties);
@@ -434,10 +490,12 @@ public class Config {
 	 * Adds a configuration source from a classpath resource at the specified path.
 	 *
 	 * @param path the path to the classpath resource
-	 * @throws ConfigException if the resource is not found or has an unsupported
-	 *                         format
+	 * @throws IOException
+	 * @throws ConfigNotFound
+	 * @throws ConfigRuntimeException if the resource is not found or has an
+	 *                                unsupported format
 	 */
-	protected void addClasspathSource(String path) {
+	protected void addClasspathSource(String path) throws ConfigNotFound, IOException {
 		ConfigSource source = createClasspathSource(path);
 		sources.add(source);
 		source.load(properties);
@@ -448,7 +506,8 @@ public class Config {
 	 *
 	 * @param path the path to the configuration file
 	 * @return the {@link ConfigSource} instance
-	 * @throws ConfigException if the file is not found or has an unsupported format
+	 * @throws ConfigRuntimeException if the file is not found or has an unsupported
+	 *                                format
 	 */
 	protected ConfigSource createSource(String path) {
 		if (path.endsWith(".properties")) {
@@ -467,7 +526,7 @@ public class Config {
 					return createSource(path + ext);
 				}
 			}
-			throw new ConfigException("No config file found for: " + path);
+			throw new ConfigRuntimeException("No config file found for: " + path);
 		}
 	}
 
@@ -477,8 +536,8 @@ public class Config {
 	 *
 	 * @param path the path to the classpath resource
 	 * @return the {@link ConfigSource} instance
-	 * @throws ConfigException if the resource is not found or has an unsupported
-	 *                         format
+	 * @throws ConfigRuntimeException if the resource is not found or has an
+	 *                                unsupported format
 	 */
 	protected ConfigSource createClasspathSource(String path) {
 		if (path.endsWith(".properties")) {
@@ -493,11 +552,11 @@ public class Config {
 					".yaml",
 					".json"
 			}) {
-				if (Config.class.getClassLoader().getResource(path + ext) != null) {
+				if (Config.class.getResource(path + ext) != null) {
 					return createClasspathSource(path + ext);
 				}
 			}
-			throw new ConfigException("No classpath config file found for: " + path);
+			throw new ConfigRuntimeException("No classpath config file found for: " + path);
 		}
 	}
 

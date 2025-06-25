@@ -35,17 +35,21 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 
 /**
- * A {@link ConfigSource} implementation for loading and saving configuration properties
- * from Java properties files. This class supports both file-based and classpath resources,
- * environment-specific overrides, and parsing of schema-defined collection types
- * (e.g., {@link List}, {@link Map}). It integrates with a {@link Config} instance to manage
- * properties and fire events on updates, using a {@link ConfigSchema} for type validation
- * when defined.
+ * A {@link ConfigSource} implementation for loading and saving configuration
+ * properties from Java properties files. This class supports both file-based
+ * and classpath resources, environment-specific overrides, and parsing of
+ * schema-defined collection types (e.g., {@link List}, {@link Map}). It
+ * integrates with a {@link Config} instance to manage properties and fire
+ * events on updates, using a {@link ConfigSchema} for type validation when
+ * defined.
  *
- * <p>Properties are stored in a package-private {@link HierarchicalProperties} instance,
- * with keys following the standard dot-separated format (e.g., {@code parent.child=value}).
- * The class supports saving and merging configurations back to properties files, with special
- * handling for formatting collections as comma-separated strings.</p>
+ * <p>
+ * Properties are stored in a package-private {@link HierarchicalProperties}
+ * instance, with keys following the standard dot-separated format (e.g.,
+ * {@code parent.child=value}). The class supports saving and merging
+ * configurations back to properties files, with special handling for formatting
+ * collections as comma-separated strings.
+ * </p>
  *
  * @author Mark Bednarczyk [mark@slytechs.com]
  * @author Sly Technologies Inc.
@@ -73,10 +77,12 @@ class PropertiesSource implements ConfigSource {
 	}
 
 	/**
-	 * Creates a new properties configuration source, specifying whether it is a classpath resource.
+	 * Creates a new properties configuration source, specifying whether it is a
+	 * classpath resource.
 	 *
 	 * @param path        the path to the properties file
-	 * @param isClasspath true if the file is a classpath resource, false for a file system path
+	 * @param isClasspath true if the file is a classpath resource, false for a file
+	 *                    system path
 	 * @param config      the {@link Config} instance to manage properties
 	 */
 	public PropertiesSource(String path, boolean isClasspath, Config config) {
@@ -86,18 +92,20 @@ class PropertiesSource implements ConfigSource {
 	}
 
 	/**
-	 * Loads configuration properties from the properties file into the provided properties store.
-	 * Values are parsed according to schema-defined types (e.g., {@link List}, {@link Map}),
-	 * and events are fired for each loaded property.
+	 * Loads configuration properties from the properties file into the provided
+	 * properties store. Values are parsed according to schema-defined types (e.g.,
+	 * {@link List}, {@link Map}), and events are fired for each loaded property.
 	 *
-	 * @param properties the {@link HierarchicalProperties} to store loaded properties
-	 * @throws ConfigException if the properties file cannot be read
+	 * @param properties the {@link HierarchicalProperties} to store loaded
+	 *                   properties
+	 * @throws ConfigRuntimeException if the properties file cannot be read
 	 * @see ConfigSource#load(HierarchicalProperties)
 	 */
 	@Override
 	public void load(HierarchicalProperties properties) {
 		Properties temp = new Properties();
-		try (InputStream is = isClasspath ? Config.class.getClassLoader().getResourceAsStream(path)
+		try (InputStream is = isClasspath
+				? config.getClass().getResourceAsStream(path)
 				: new FileInputStream(path)) {
 			if (is != null) {
 				temp.load(is);
@@ -110,24 +118,26 @@ class PropertiesSource implements ConfigSource {
 				});
 			}
 		} catch (IOException e) {
-			throw new ConfigException("Failed to load properties: " + path, e);
+			throw new ConfigRuntimeException("Failed to load properties: " + path, e);
 		}
 	}
 
 	/**
-	 * Loads environment-specific override properties from a properties file
-	 * (e.g., {@code config-prod.properties}). Overrides are applied to the {@link Config} instance,
-	 * firing events for updated properties. If the override file is not found, the operation
-	 * is silently ignored.
+	 * Loads environment-specific override properties from a properties file (e.g.,
+	 * {@code config-prod.properties}). Overrides are applied to the {@link Config}
+	 * instance, firing events for updated properties. If the override file is not
+	 * found, the operation is silently ignored.
 	 *
-	 * @param subProperty the suffix for the override file (e.g., "prod" for {@code config-prod.properties})
+	 * @param subProperty the suffix for the override file (e.g., "prod" for
+	 *                    {@code config-prod.properties})
 	 * @see ConfigSource#loadOverride(String)
 	 */
 	@Override
 	public void loadOverride(String subProperty) {
 		String overridePath = path.replaceFirst("\\.(\\w+)$", "-" + subProperty + ".$1");
-		try (InputStream is = isClasspath ? Config.class.getClassLoader().getResourceAsStream(overridePath)
-				: new FileInputStream(overridePath)) {
+		try (InputStream is = isClasspath
+				? config.getClass().getResourceAsStream(overridePath)
+				: new FileInputStream(path)) {
 			if (is != null) {
 				Properties overrideProps = new Properties();
 				overrideProps.load(is);
@@ -145,12 +155,12 @@ class PropertiesSource implements ConfigSource {
 	}
 
 	/**
-	 * Saves the provided properties to the properties file, formatting values as strings.
-	 * Schema-defined collections (e.g., {@link List}, {@link Map}) are serialized as
-	 * comma-separated strings.
+	 * Saves the provided properties to the properties file, formatting values as
+	 * strings. Schema-defined collections (e.g., {@link List}, {@link Map}) are
+	 * serialized as comma-separated strings.
 	 *
 	 * @param properties the {@link HierarchicalProperties} to save
-	 * @throws ConfigException if the properties file cannot be written
+	 * @throws ConfigRuntimeException if the properties file cannot be written
 	 * @see ConfigSource#save(HierarchicalProperties)
 	 */
 	@Override
@@ -164,16 +174,18 @@ class PropertiesSource implements ConfigSource {
 			});
 			stringProps.store(fos, "Configuration");
 		} catch (IOException e) {
-			throw new ConfigException("Failed to save properties: " + path, e);
+			throw new ConfigRuntimeException("Failed to save properties: " + path, e);
 		}
 	}
 
 	/**
-	 * Merges the provided properties with existing properties file content, saving the combined result.
-	 * If the properties file does not exist, the provided properties are saved directly.
+	 * Merges the provided properties with existing properties file content, saving
+	 * the combined result. If the properties file does not exist, the provided
+	 * properties are saved directly.
 	 *
 	 * @param properties the {@link HierarchicalProperties} to merge
-	 * @throws ConfigException if the properties file cannot be read or written
+	 * @throws ConfigRuntimeException if the properties file cannot be read or
+	 *                                written
 	 * @see ConfigSource#merge(HierarchicalProperties)
 	 */
 	@Override
@@ -183,15 +195,16 @@ class PropertiesSource implements ConfigSource {
 			existing.load(fis);
 		} catch (IOException e) {
 			save(properties);
-		 return;
+			return;
 		}
 		properties.forEach((k, v) -> existing.put(k, v));
 		save(existing);
 	}
 
 	/**
-	 * Parses a property value based on the schema-defined type. Supports {@link List} and
-	 * {@link Map} types by parsing comma-separated strings or key-value pairs.
+	 * Parses a property value based on the schema-defined type. Supports
+	 * {@link List} and {@link Map} types by parsing comma-separated strings or
+	 * key-value pairs.
 	 *
 	 * @param key   the property key
 	 * @param value the string value to parse
@@ -223,8 +236,9 @@ class PropertiesSource implements ConfigSource {
 	}
 
 	/**
-	 * Formats a property value for saving to a properties file. Converts {@link List} and
-	 * {@link Map} types to comma-separated strings or key-value pairs.
+	 * Formats a property value for saving to a properties file. Converts
+	 * {@link List} and {@link Map} types to comma-separated strings or key-value
+	 * pairs.
 	 *
 	 * @param value the value to format
 	 * @return the formatted string representation

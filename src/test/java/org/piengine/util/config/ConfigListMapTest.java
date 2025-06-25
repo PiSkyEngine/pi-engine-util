@@ -70,7 +70,7 @@ class ConfigListMapTest {
     }
 
     @Test
-    void testLoadListProperties() {
+    void testLoadListProperties() throws ConfigNotFound, IOException {
         ConfigSchema schema = ConfigSchema.create()
                 .defineList("app.servers", String.class, Collections.emptyList());
         Config config = new Config().withSchema(schema);
@@ -81,7 +81,7 @@ class ConfigListMapTest {
     }
 
     @Test
-    void testLoadListYaml() {
+    void testLoadListYaml() throws ConfigNotFound, IOException {
         ConfigSchema schema = ConfigSchema.create()
                 .defineList("app.servers", String.class, Collections.emptyList());
         Config config = new Config().withSchema(schema);
@@ -92,7 +92,7 @@ class ConfigListMapTest {
     }
 
     @Test
-    void testLoadListJson() {
+    void testLoadListJson() throws ConfigNotFound, IOException {
         ConfigSchema schema = ConfigSchema.create()
                 .defineList("app.servers", String.class, Collections.emptyList());
         Config config = new Config().withSchema(schema);
@@ -103,7 +103,7 @@ class ConfigListMapTest {
     }
 
     @Test
-    void testLoadMapProperties() {
+    void testLoadMapProperties() throws ConfigNotFound, IOException {
         ConfigSchema schema = ConfigSchema.create()
                 .defineMap("app.settings", String.class, Collections.emptyMap());
         Config config = new Config().withSchema(schema);
@@ -118,7 +118,7 @@ class ConfigListMapTest {
     }
 
     @Test
-    void testLoadMapYaml() {
+    void testLoadMapYaml() throws ConfigNotFound, IOException {
         ConfigSchema schema = ConfigSchema.create()
                 .defineMap("app.settings", String.class, Collections.emptyMap());
         Config config = new Config().withSchema(schema);
@@ -133,7 +133,7 @@ class ConfigListMapTest {
     }
 
     @Test
-    void testLoadMapJson() {
+    void testLoadMapJson() throws ConfigNotFound, IOException {
         ConfigSchema schema = ConfigSchema.create()
                 .defineMap("app.settings", String.class, Collections.emptyMap());
         Config config = new Config().withSchema(schema);
@@ -148,7 +148,7 @@ class ConfigListMapTest {
     }
 
     @Test
-    void testListSchemaConstraints() {
+    void testListSchemaConstraints() throws ConfigNotFound, IOException {
         ConfigSchema schema = ConfigSchema.create()
                 .defineList("app.servers", String.class, Arrays.asList("default")).critical()
                 .defineList("app.ports", Integer.class, Collections.emptyList()).warning();
@@ -158,14 +158,14 @@ class ConfigListMapTest {
         assertEquals(Arrays.asList("server1", "server2", "server3"), config.get("app.servers").asList(String.class));
 
         // Type mismatch
-        assertThrows(ConfigException.class, () -> config.get("app.servers").asList(Integer.class));
+        assertThrows(ConfigRuntimeException.class, () -> config.get("app.servers").asList(Integer.class));
 
         // Undefined key
-        assertThrows(ConfigException.class, () -> config.get("app.unknown").asList(String.class));
+        assertThrows(ConfigRuntimeException.class, () -> config.get("app.unknown").asList(String.class));
     }
 
     @Test
-    void testMapSchemaConstraints() {
+    void testMapSchemaConstraints() throws ConfigNotFound, IOException {
         ConfigSchema schema = ConfigSchema.create()
                 .defineMap("app.settings", String.class, Collections.emptyMap()).critical()
                 .defineMap("app.configs", Integer.class, Collections.emptyMap()).warning();
@@ -179,14 +179,14 @@ class ConfigListMapTest {
         assertEquals(expected, config.get("app.settings").asMap(String.class));
 
         // Type mismatch
-        assertThrows(ConfigException.class, () -> config.get("app.settings").asMap(Integer.class));
+        assertThrows(ConfigRuntimeException.class, () -> config.get("app.settings").asMap(Integer.class));
 
         // Undefined key
-        assertThrows(ConfigException.class, () -> config.get("app.unknown").asMap(String.class));
+        assertThrows(ConfigRuntimeException.class, () -> config.get("app.unknown").asMap(String.class));
     }
 
     @Test
-    void testListErrorHandlers() {
+    void testListErrorHandlers() throws ConfigNotFound, IOException {
         AtomicInteger warnings = new AtomicInteger();
         AtomicInteger criticals = new AtomicInteger();
 
@@ -203,12 +203,12 @@ class ConfigListMapTest {
         assertEquals(1, warnings.get());
 
         // Trigger critical
-        assertThrows(ConfigException.class, () -> config.get("app.servers").asCritical().asList(Integer.class));
+        assertThrows(ConfigRuntimeException.class, () -> config.get("app.servers").asCritical().asList(Integer.class));
         assertEquals(1, criticals.get());
     }
 
     @Test
-    void testMapErrorHandlers() {
+    void testMapErrorHandlers() throws ConfigNotFound, IOException {
         AtomicInteger warnings = new AtomicInteger();
         AtomicInteger criticals = new AtomicInteger();
 
@@ -225,12 +225,12 @@ class ConfigListMapTest {
         assertEquals(1, warnings.get());
 
         // Trigger critical
-        assertThrows(ConfigException.class, () -> config.get("app.settings").asCritical().asMap(Integer.class));
+        assertThrows(ConfigRuntimeException.class, () -> config.get("app.settings").asCritical().asMap(Integer.class));
         assertEquals(1, criticals.get());
     }
 
     @Test
-    void testListOrListDefault() {
+    void testListOrListDefault() throws ConfigNotFound, IOException {
         ConfigSchema schema = ConfigSchema.create()
                 .defineList("app.missing", String.class, Arrays.asList("default1", "default2"));
         Config config = new Config().withSchema(schema);
@@ -241,7 +241,7 @@ class ConfigListMapTest {
     }
 
     @Test
-    void testMapOrMapDefault() {
+    void testMapOrMapDefault() throws ConfigNotFound, IOException {
         Map<String, String> defaultMap = new HashMap<>();
         defaultMap.put("defaultKey", "defaultValue");
 
@@ -255,7 +255,7 @@ class ConfigListMapTest {
     }
 
     @Test
-    void testPutList() {
+    void testPutList() throws ConfigNotFound, IOException {
         ConfigSchema schema = ConfigSchema.create()
                 .defineList("app.servers", String.class, Collections.emptyList());
         Config config = new Config().withSchema(schema);
@@ -266,11 +266,11 @@ class ConfigListMapTest {
         assertEquals(newServers, config.get("app.servers").asList(String.class));
 
         // Type mismatch
-        assertThrows(ConfigException.class, () -> config.putList("app.servers", Arrays.asList(1, 2)));
+        assertThrows(ConfigRuntimeException.class, () -> config.putList("app.servers", Arrays.asList(1, 2)));
     }
 
     @Test
-    void testPutMap() {
+    void testPutMap() throws ConfigNotFound, IOException {
         ConfigSchema schema = ConfigSchema.create()
                 .defineMap("app.settings", String.class, Collections.emptyMap());
         Config config = new Config().withSchema(schema);
@@ -284,11 +284,11 @@ class ConfigListMapTest {
         // Type mismatch
         Map<String, Integer> wrongMap = new HashMap<>();
         wrongMap.put("key", 1);
-        assertThrows(ConfigException.class, () -> config.putMap("app.settings", wrongMap));
+        assertThrows(ConfigRuntimeException.class, () -> config.putMap("app.settings", wrongMap));
     }
 
     @Test
-    void testListSystemPropertyOverride() {
+    void testListSystemPropertyOverride() throws ConfigNotFound, IOException {
         System.setProperty("app.servers", "override1,override2");
         ConfigSchema schema = ConfigSchema.create()
                 .defineList("app.servers", String.class, Collections.emptyList());
@@ -304,7 +304,7 @@ class ConfigListMapTest {
     }
 
     @Test
-    void testMapSystemPropertyOverride() {
+    void testMapSystemPropertyOverride() throws ConfigNotFound, IOException {
         System.setProperty("app.settings", "overrideKey=overrideValue");
         ConfigSchema schema = ConfigSchema.create()
                 .defineMap("app.settings", String.class, Collections.emptyMap());
@@ -326,7 +326,7 @@ class ConfigListMapTest {
     }
 
     @Test
-    void testSaveListAndMap() throws IOException {
+    void testSaveListAndMap() throws IOException, ConfigNotFound {
         ConfigSchema schema = ConfigSchema.create()
                 .defineList("app.servers", String.class, Collections.emptyList())
                 .defineMap("app.settings", String.class, Collections.emptyMap());

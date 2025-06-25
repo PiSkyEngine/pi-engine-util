@@ -31,24 +31,25 @@ package org.piengine.util.config;
  * @author Mark Bednarczyk [mark@slytechs.com]
  * @author Sly Technologies Inc.
  */
-public class ConfigException extends Exception {
+public class MissingConfigProperty extends ConfigRuntimeException {
 
 	/** The serial version UID for serialization. */
-	private static final long serialVersionUID = 763449475830548650L;
+
+	private static final long serialVersionUID = -525453312365479261L;
 
 	/**
 	 * Constructs a new configuration exception with the specified message.
 	 *
 	 * @param message the error message describing the issue
 	 */
-	public ConfigException(String message) {
+	public MissingConfigProperty(String message) {
 		super(message);
 	}
 
 	/**
 	 * 
 	 */
-	public ConfigException() {
+	public MissingConfigProperty() {
 		super();
 	}
 
@@ -58,7 +59,8 @@ public class ConfigException extends Exception {
 	 * @param enableSuppression
 	 * @param writableStackTrace
 	 */
-	public ConfigException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+	public MissingConfigProperty(String message, Throwable cause, boolean enableSuppression,
+			boolean writableStackTrace) {
 		super(message, cause, enableSuppression, writableStackTrace);
 	}
 
@@ -66,14 +68,14 @@ public class ConfigException extends Exception {
 	 * @param message
 	 * @param cause
 	 */
-	public ConfigException(String message, Throwable cause) {
+	public MissingConfigProperty(String message, Throwable cause) {
 		super(message, cause);
 	}
 
 	/**
 	 * @param cause
 	 */
-	public ConfigException(Throwable cause) {
+	public MissingConfigProperty(Throwable cause) {
 		super(cause);
 	}
 }

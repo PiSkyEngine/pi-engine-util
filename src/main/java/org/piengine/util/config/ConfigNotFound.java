@@ -21,34 +21,23 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+
 package org.piengine.util.config;
 
 /**
- * Represents an exception thrown during configuration operations in a
- * configuration system. This exception is used for errors such as invalid
- * property values, missing files, or schema validation failures.
+ * 
  *
  * @author Mark Bednarczyk [mark@slytechs.com]
  * @author Sly Technologies Inc.
  */
-public class ConfigException extends Exception {
+public class ConfigNotFound extends ConfigException {
 
-	/** The serial version UID for serialization. */
-	private static final long serialVersionUID = 763449475830548650L;
-
-	/**
-	 * Constructs a new configuration exception with the specified message.
-	 *
-	 * @param message the error message describing the issue
-	 */
-	public ConfigException(String message) {
-		super(message);
-	}
+	private static final long serialVersionUID = 2441718606744570583L;
 
 	/**
 	 * 
 	 */
-	public ConfigException() {
+	public ConfigNotFound() {
 		super();
 	}
 
@@ -58,7 +47,7 @@ public class ConfigException extends Exception {
 	 * @param enableSuppression
 	 * @param writableStackTrace
 	 */
-	public ConfigException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+	public ConfigNotFound(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
 		super(message, cause, enableSuppression, writableStackTrace);
 	}
 
@@ -66,14 +55,22 @@ public class ConfigException extends Exception {
 	 * @param message
 	 * @param cause
 	 */
-	public ConfigException(String message, Throwable cause) {
+	public ConfigNotFound(String message, Throwable cause) {
 		super(message, cause);
+	}
+
+	/**
+	 * @param message
+	 */
+	public ConfigNotFound(String message) {
+		super(message);
 	}
 
 	/**
 	 * @param cause
 	 */
-	public ConfigException(Throwable cause) {
+	public ConfigNotFound(Throwable cause) {
 		super(cause);
 	}
+
 }

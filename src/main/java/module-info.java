@@ -86,10 +86,12 @@
  */
 module org.piengine.util {
 	exports org.piengine.util;
+	exports org.piengine.util.annotations;
 	exports org.piengine.util.event;
 	exports org.piengine.util.config;
 	exports org.piengine.util.concurrent.locks;
 	
 	requires org.yaml.snakeyaml;
     requires com.fasterxml.jackson.databind;
+	requires java.logging;
 }
