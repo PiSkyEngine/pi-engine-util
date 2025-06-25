@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -10,28 +11,65 @@
         <relativePath>../pi-engine/pom.xml</relativePath>
     </parent>
 
-    <artifactId>pi-engine-util</artifactId>
+    <artifactId>pi-engine-inject</artifactId>
     <packaging>jar</packaging>
 
-    <name>PI Engine Utilities, Concurrency, Locks</name>
-    <description>Common utilities module for the Pie in the Sky 3D Graphics Engine, providing locks, event handling (Omnibus), and general utilities.</description>
+    <name>PI Engine Dependency Injection</name>
+    <description>Provides engine-optimized dependency injection.</description>
     <url>https://piengine.org</url>
 
     <dependencies>
+        <!-- JSR-330 Dependency Injection -->
+        <dependency>
+            <groupId>javax.inject</groupId>
+            <artifactId>javax.inject</artifactId>
+            <version>1</version>
+        </dependency>
+
+        <!-- Test Dependencies -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
-	    <dependency>
-	        <groupId>org.yaml</groupId>
-	        <artifactId>snakeyaml</artifactId>
-	    </dependency>
-	    <dependency>
-	        <groupId>com.fasterxml.jackson.core</groupId>
-	        <artifactId>jackson-databind</artifactId>
-	    </dependency>
+        <dependency>
+            <groupId>aopalliance</groupId>
+            <artifactId>aopalliance</artifactId>
+            <version>1.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax.inject</groupId>
+            <artifactId>javax.inject</artifactId>
+            <version>1</version>
+        </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <!-- Compiler Plugin for JDK 23 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+                <configuration>
+                    <source>23</source>
+                    <target>23</target>
+                </configuration>
+            </plugin>
+            <!-- Surefire Plugin for Tests -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.3.1</version>
+                <configuration>
+                    <includes>
+                        <include>**/*Test.java</include>
+                    </includes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
     <repositories>
         <repository>

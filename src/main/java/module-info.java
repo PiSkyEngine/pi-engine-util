@@ -84,12 +84,10 @@
  *
  * @since 0.0.1
  */
-module org.piengine.util {
-	exports org.piengine.util;
-	exports org.piengine.util.event;
-	exports org.piengine.util.config;
-	exports org.piengine.util.concurrent.locks;
+module org.piengine.inject {
+	exports org.piengine.inject;
+	exports org.piengine.inject.matcher;
 	
-	requires org.yaml.snakeyaml;
-    requires com.fasterxml.jackson.databind;
+	requires java.logging;
+	requires javax.inject;
 }
